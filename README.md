@@ -3,6 +3,8 @@
 Tienda de skincare coreano (K-beauty) en Valencia, Venezuela. Catálogo rápido,
 carrito, pago multi-tasa, pedido por WhatsApp.
 
+**Repo:** https://github.com/jomigp/soko-beauty
+
 > Documento maestro: ver el archivo `SOKO_BEAUTY_MASTER.md` que acompaña al
 > zip de diseño `stitch_soko_beauty_frontend_design.zip`. Este README es
 > el estado del proyecto sprint a sprint.
