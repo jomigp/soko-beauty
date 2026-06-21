@@ -1,0 +1,19 @@
+node_modules
+.next
+.vercel
+out
+.env
+.env.local
+.env*.local
+.DS_Store
+*.log
+coverage
+.turbo
+.idea
+.vscode/*
+!.vscode/extensions.json
+dist
+build
+
+# build artifacts
+tsconfig.tsbuildinfo

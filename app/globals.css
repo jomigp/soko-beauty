@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Soko Beauty — Global CSS
+   --------------------------------------------------------
+   - OKLCH CSS variables for any new colors we add (per
+     impeccable: prefer OKLCH over hex/rgb for new tokens).
+   - The design-system hex values live in tailwind.config.ts
+     for visual fidelity with the Stitch designs.
+   - Glassmorphism + glow utility classes (used purposefully:
+     nav, drawer, quick-buy — NOT as a default).
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* OKLCH versions of the design palette (for future use) */
+    --soko-cream: oklch(0.972 0.013 50); /* #fdf9f6 */
+    --soko-ink: oklch(0.18 0.005 30); /* #1c1b1a */
+    --soko-mauve: oklch(0.49 0.045 350); /* #583f4e */
+    --soko-fuchsia: oklch(0.46 0.27 340); /* #ad0089 */
+    --soko-lavender: oklch(0.45 0.2 280); /* #4b52be */
+    --soko-mint: oklch(0.72 0.18 155); /* #75fbb8 */
+    --soko-dusty-pink: oklch(0.78 0.04 350); /* #dfbdcf */
+
+    /* Color tokens (raw OKLCH) for fine accent use */
+    --soko-glow-start: #ff00cc;
+    --soko-glow-mid: #7a82f0;
+    --soko-glow-end: #ff8a8a;
+
+    /* Glassmorphism tokens */
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-blur: 12px;
+  }
+
+  html {
+    /* Body line-length cap (per impeccable: 65–75ch on body copy) */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: theme("colors.background");
+    color: theme("colors.on-background");
+    font-family: var(--font-geist), Geist, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    /* Per impeccable: ≥4.5:1 contrast — on-background on background is ~16:1 */
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-bodoni), "Bodoni Moda", serif;
+    /* Per impeccable: text-wrap balance on h1–h3 */
+    text-wrap: balance;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: theme("colors.on-surface");
+  }
+}
+
+@layer utilities {
+  /* Glass panel — used ONLY on nav, drawer, modal, quick-buy overlay
+     (per impeccable: glassmorphism is not a default). */
+  .glass-panel {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+
+  /* The "Glow" hover effect — used on product cards & primary buttons */
+  .glow-shadow {
+    transition: box-shadow 200ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .glow-shadow:hover {
+    box-shadow: 0 4px 20px rgba(173, 0, 137, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Hide scrollbar utility (used on horizontal chip rows) */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Body prose — per impeccable: 65–75ch max */
+  .prose-body {
+    max-width: 65ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
