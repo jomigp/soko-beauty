@@ -127,6 +127,10 @@ export interface Database {
         Args: { p_ip_hash: string; p_day: string };
         Returns: number;
       };
+      reload_schema_cache: {
+        Args: Record<string, never>;
+        Returns: void;
+      };
     };
     Enums: Record<string, never>;
   };

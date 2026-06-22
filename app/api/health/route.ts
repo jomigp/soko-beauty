@@ -29,9 +29,45 @@ interface ProductSample {
   price_usd: number;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = new URL(request.url);
+  const wantsReload = url.searchParams.get("reload") === "true";
+
+  // If the user asked for a schema cache reload, do that first.
+  // We use a SECURITY DEFINER RPC so the anon key can trigger it
+  // (the function is created in supabase/schema.sql). This is a
+  // no-op cache hint — it doesn't expose any data, just tells
+  // PostgREST to re-read the schema.
+  let reloadAttempt: { attempted: boolean; ok: boolean; error: string | null } = {
+    attempted: false,
+    ok: false,
+    error: null,
+  };
+  if (wantsReload && supabaseUrl && supabaseKey) {
+    reloadAttempt.attempted = true;
+    try {
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/rpc/reload_schema_cache`,
+        {
+          method: "POST",
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }
+      );
+      reloadAttempt.ok = res.ok;
+      if (!res.ok) {
+        reloadAttempt.error = `HTTP ${res.status}: ${await res.text().catch(() => "")}`;
+      }
+    } catch (e) {
+      reloadAttempt.error = e instanceof Error ? e.message : "unknown";
+    }
+  }
 
   const configured = Boolean(supabaseUrl && supabaseKey);
 
@@ -127,7 +163,14 @@ export async function GET() {
       tables,
       productSamples,
       storeSetting,
-      hints: buildHints(configured, tables, productSamples),
+      reload: reloadAttempt,
+      // If the caller asked for a reload, the actual data is from BEFORE
+      // the reload took effect. PostgREST needs a moment to apply it.
+      // Tell the caller to re-hit /api/health in a few seconds.
+      reloadHint: wantsReload
+        ? "Schema cache reload triggered. Wait 3-5 seconds, then re-visit /api/health (without ?reload=true) to see the actual state."
+        : null,
+      hints: buildHints(configured, tables, productSamples, wantsReload),
     },
     {
       status: allOk ? 200 : 503,
@@ -139,7 +182,8 @@ export async function GET() {
 function buildHints(
   configured: boolean,
   tables: Record<string, TableStatus>,
-  productSamples: ProductSample[]
+  productSamples: ProductSample[],
+  reloadRequested: boolean
 ): string[] {
   const hints: string[] = [];
   if (!configured) {
@@ -163,9 +207,15 @@ function buildHints(
     } else if (t.error?.toLowerCase().includes("schema cache")) {
       // Surface the fix for the schema cache issue only once
       if (name === "product") {
-        hints.push(
-          "⚠️ Schema cache de PostgREST está desactualizado. En Supabase SQL Editor corre: NOTIFY pgrst, 'reload schema'; — luego refresca /api/health."
-        );
+        if (reloadRequested) {
+          hints.push(
+            "⚠️ Schema cache reload attempted. Wait 3-5 seconds, then re-visit /api/health (without ?reload=true) to confirm."
+          );
+        } else {
+          hints.push(
+            "⚠️ Schema cache de PostgREST está desactualizado. Visita /api/health?reload=true para dispararlo desde el navegador, o en Supabase SQL Editor corre: NOTIFY pgrst, 'reload schema'; — luego refresca /api/health."
+          );
+        }
       }
     } else if (t.rowCount === 0 && name !== "routine_query") {
       hints.push(

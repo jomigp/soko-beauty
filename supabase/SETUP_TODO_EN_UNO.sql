@@ -181,6 +181,20 @@ end; $$;
 grant execute on function increment_routine_query(text, date) to anon, authenticated;
 
 -- ============================================================
+-- Reload PostgREST schema cache (callable from /api/health?reload=true)
+-- ============================================================
+
+create or replace function reload_schema_cache() returns void
+language plpgsql
+security definer
+set search_path = public
+as $$ begin
+  perform pg_notify('pgrst', 'reload schema');
+end; $$;
+
+grant execute on function reload_schema_cache() to anon, authenticated;
+
+-- ============================================================
 -- Seed: 6 productos + 13 categorías
 -- ============================================================
 
