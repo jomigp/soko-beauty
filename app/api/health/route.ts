@@ -147,22 +147,56 @@ function buildHints(
       "NEXT_PUBLIC_SUPABASE_URL y/o NEXT_PUBLIC_SUPABASE_ANON_KEY no están configuradas en Vercel. Settings → Environment Variables."
     );
   }
+
+  // Detect the PostgREST schema-cache issue specifically.
+  // Symptom: tables exist in DB but PostgREST returns
+  // "Could not find the table 'public.X' in the schema cache".
+  const schemaCacheIssue = Object.values(tables).some(
+    (t) => t.exists && t.error?.toLowerCase().includes("schema cache")
+  );
+
   for (const [name, t] of Object.entries(tables)) {
-    if (!t.exists) {
+    if (!t.exists && !t.error) {
       hints.push(
         `La tabla "${name}" no existe. Corre supabase/SETUP_TODO_EN_UNO.sql en Supabase SQL Editor.`
       );
+    } else if (t.error?.toLowerCase().includes("schema cache")) {
+      // Surface the fix for the schema cache issue only once
+      if (name === "product") {
+        hints.push(
+          "⚠️ Schema cache de PostgREST está desactualizado. En Supabase SQL Editor corre: NOTIFY pgrst, 'reload schema'; — luego refresca /api/health."
+        );
+      }
     } else if (t.rowCount === 0 && name !== "routine_query") {
       hints.push(
         `La tabla "${name}" existe pero está vacía. Revisa el seed (seed-productos-ejemplo.sql).`
       );
     }
   }
-  if (tables.product.exists && (tables.product.rowCount ?? 0) > 0 && productSamples.length === 0) {
+
+  if (
+    tables.product.exists &&
+    (tables.product.rowCount ?? 0) > 0 &&
+    productSamples.length === 0
+  ) {
     hints.push(
       "Hay productos en la BD pero ninguno con in_stock=true. Marca 'En stock' en /admin/productos."
     );
   }
+
+  // If the user previously hit the 'type already exists' error on
+  // SETUP_TODO_EN_UNO.sql, the seed never ran — product table is empty
+  // even if the table itself exists.
+  if (
+    tables.product.exists &&
+    tables.product.rowCount === 0 &&
+    !schemaCacheIssue
+  ) {
+    hints.push(
+      "📦 La tabla 'product' está vacía. Tu primer intento de correr SETUP_TODO_EN_UNO.sql falló en la línea 3 (type already exists) y el seed nunca se insertó. Re-corre el archivo completo en Supabase SQL Editor — la versión actual es idempotente, no se romperá."
+    );
+  }
+
   if (hints.length === 0) {
     hints.push(
       "Todo en orden. Si /productos sigue vacío, hard refresh (Ctrl+Shift+R) o prueba en ventana incógnito."
