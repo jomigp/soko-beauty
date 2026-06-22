@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function SoportePage() {
   const whatsapp = "584244273062";
   return (
-    <main className="min-h-screen bg-background px-margin-mobile pb-32 pt-20 md:px-margin-desktop md:pb-24">
+    <main className="min-h-screen bg-background px-margin-mobile pb-40 pt-20 md:px-margin-desktop md:pb-24">
       <div className="prose-body mx-auto max-w-3xl">
         <h1 className="font-headline-md text-headline-sm md:text-headline-md text-on-surface">
           ¿Cómo pedir?

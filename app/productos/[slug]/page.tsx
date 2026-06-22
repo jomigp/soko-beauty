@@ -47,7 +47,7 @@ export default async function ProductPage({
   const related = (await getRelatedProducts(product)).slice(0, 4);
 
   return (
-    <main className="min-h-screen bg-background pb-32 pt-20 md:pb-24">
+    <main className="min-h-screen bg-background pb-40 pt-20 md:pb-24">
       <article className="mx-auto max-w-site px-margin-mobile md:px-margin-desktop">
         <Link
           href="/productos"

@@ -166,7 +166,7 @@ export default function CartPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background pb-32 pt-20 md:pb-24">
+    <main className="min-h-screen bg-background pb-40 pt-20 md:pb-24">
       <div className="mx-auto max-w-3xl px-margin-mobile md:px-margin-desktop">
         <Link
           href="/productos"
