@@ -239,7 +239,9 @@ Tu tienda tiene un botón **"Rutina"** en el menú inferior que abre un generado
 - Tips prácticos personalizados
 - **Solo productos de tu tienda** — si la IA sugiere algo que no vendes, el sistema lo filtra
 
-**Cómo activarlo (5 min, gratis):**
+**Cómo activarlo:**
+
+**Opción A — Gemini (gratis, recomendado):**
 
 1. Ve a https://aistudio.google.com/app/apikey
 2. Click **"Create API Key"** (necesitas una cuenta de Google)
@@ -248,8 +250,14 @@ Tu tienda tiene un botón **"Rutina"** en el menú inferior que abre un generado
 5. **Add New**:
    - **Key:** `GEMINI_API_KEY`
    - **Value:** la key que copiaste
-6. Marca las 3 environments (Production, Preview, Development)
+6. Marca las 3 environments
 7. **Save** → Vercel hace redeploy automático
+
+**Opción B — DeepSeek:** regístrate en https://platform.deepseek.com (créditos gratis), crea API key en https://platform.deepseek.com/api_keys, añade `DEEPSEEK_API_KEY` en Vercel, y en /admin/configuracion elige DeepSeek.
+
+**Opción C — OpenAI (pagado):** crea key en https://platform.openai.com/api-keys, añade `OPENAI_API_KEY` en Vercel, y en /admin/configuracion elige OpenAI y gpt-4o-mini (el más barato).
+
+**Cambiar de proveedor en cualquier momento:** ve a /admin/configuracion → sección "Proveedor de IA" → elige del dropdown → guarda. No requiere redeploy.
 
 **Si no la activas**, la página muestra un mensaje pidiendo al equipo técnico que la configure. No rompe nada.
 

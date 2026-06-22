@@ -45,6 +45,8 @@ export type StoreSetting = {
   store_pickup_note: string | null;
   national_shipping_note: string | null;
   payment_methods: PaymentMethodConfig[];
+  ai_provider: "gemini" | "deepseek" | "openai";
+  ai_model: string;
 };
 
 export interface Category {
@@ -76,6 +78,8 @@ type StoreSettingRow = {
   store_pickup_note: string | null;
   national_shipping_note: string | null;
   payment_methods: PaymentMethodConfig[];
+  ai_provider: "gemini" | "deepseek" | "openai";
+  ai_model: string;
 };
 
 type StoreSettingInsert = Omit<StoreSettingRow, "id">;
@@ -91,6 +95,8 @@ type StoreSettingUpdate = Partial<{
   store_pickup_note: string | null;
   national_shipping_note: string | null;
   payment_methods: PaymentMethodConfig[];
+  ai_provider: "gemini" | "deepseek" | "openai";
+  ai_model: string;
 }>;
 
 export interface Database {

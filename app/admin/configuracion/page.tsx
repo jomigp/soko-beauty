@@ -291,6 +291,79 @@ export default function AdminConfiguracionPage() {
         </ul>
       </section>
 
+      <section className="space-y-3 rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-md">
+        <div>
+          <h2 className="font-label-caps text-label-caps text-on-surface-variant">
+            Proveedor de IA (Generador de Rutinas)
+          </h2>
+          <p className="mt-1 font-body-sm text-body-sm text-on-surface-variant">
+            Elige qué modelo de IA arma las rutinas en la página /rutina.
+            Las API keys se configuran en Vercel (env vars), no aquí.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1">
+            <span className="font-label-caps text-label-caps text-on-surface-variant">
+              Proveedor
+            </span>
+            <select
+              value={store.ai_provider}
+              onChange={(e) =>
+                setStore({
+                  ...store,
+                  ai_provider: e.target.value as "gemini" | "deepseek" | "openai",
+                })
+              }
+              className="h-12 rounded-md border border-outline-variant bg-surface-container-lowest px-3 font-body-md text-body-md"
+            >
+              <option value="gemini">Google Gemini (gratis con AI Studio)</option>
+              <option value="deepseek">DeepSeek (créditos gratis al registrarse)</option>
+              <option value="openai">OpenAI (pagado, gpt-4o-mini desde $0.15/1M tokens)</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-label-caps text-label-caps text-on-surface-variant">
+              Modelo
+            </span>
+            <select
+              value={store.ai_model}
+              onChange={(e) => setStore({ ...store, ai_model: e.target.value })}
+              className="h-12 rounded-md border border-outline-variant bg-surface-container-lowest px-3 font-body-md text-body-md"
+            >
+              {store.ai_provider === "gemini" && (
+                <>
+                  <option value="gemini-3.5-flash">gemini-3.5-flash (recomendado)</option>
+                  <option value="gemini-3-flash">gemini-3-flash</option>
+                  <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                  <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                </>
+              )}
+              {store.ai_provider === "deepseek" && (
+                <>
+                  <option value="deepseek-chat">deepseek-chat</option>
+                  <option value="deepseek-reasoner">deepseek-reasoner (más lento pero más capaz)</option>
+                </>
+              )}
+              {store.ai_provider === "openai" && (
+                <>
+                  <option value="gpt-4o-mini">gpt-4o-mini (más barato)</option>
+                  <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+                  <option value="gpt-4o">gpt-4o</option>
+                  <option value="gpt-4.1">gpt-4.1</option>
+                  <option value="gpt-3.5-turbo">gpt-3.5-turbo (legacy)</option>
+                </>
+              )}
+            </select>
+          </label>
+        </div>
+        <p className="font-body-sm text-body-sm text-on-surface-variant">
+          💡 Las API keys (<code className="rounded bg-surface-container-low px-1">GEMINI_API_KEY</code>,{" "}
+          <code className="rounded bg-surface-container-low px-1">DEEPSEEK_API_KEY</code>,{" "}
+          <code className="rounded bg-surface-container-low px-1">OPENAI_API_KEY</code>) se configuran en Vercel → Settings → Environment Variables.
+          El sistema usa la que coincida con tu proveedor aquí seleccionado.
+        </p>
+      </section>
+
       {error && (
         <div
           role="alert"

@@ -57,22 +57,27 @@ create table store_setting (
   local_delivery_cost_usd numeric(10, 2) not null default 0,
   store_pickup_note text,
   national_shipping_note text,
-  payment_methods jsonb not null default '[]'
+  payment_methods jsonb not null default '[]',
+  ai_provider text not null default 'gemini',
+  ai_model text not null default 'gemini-3.5-flash'
 );
 
 -- Seed the singleton row with the example from the master document §5
 insert into store_setting (
   tasa_bcv, tasa_usdt, whatsapp_number,
-  local_delivery_cost_usd, payment_methods
+  local_delivery_cost_usd, payment_methods,
+  ai_provider, ai_model
 ) values (
-  612, 800, '584244273062', 3,
+  612, 800, '584244273062', 0,
   '[
     {"key":"pago_movil","label":"Pago Móvil","currency":"VES","rate":"bcv","is_active":true},
     {"key":"transferencia","label":"Transferencia","currency":"VES","rate":"bcv","is_active":true},
     {"key":"zelle","label":"Zelle","currency":"USD","rate":"usdt","is_active":true},
     {"key":"usdt","label":"USDT (Binance)","currency":"USD","rate":"usdt","is_active":true},
     {"key":"efectivo_usd","label":"Efectivo USD","currency":"USD","rate":"usdt","is_active":true}
-  ]'::jsonb
+  ]'::jsonb,
+  'gemini',
+  'gemini-3.5-flash'
 );
 
 -- ---------- ROW-LEVEL SECURITY ----------
@@ -102,3 +107,16 @@ on conflict (id) do nothing;
 
 create policy "product-images: public read" on storage.objects
   for select using (bucket_id = 'product-images');
+
+-- ============================================================
+-- Migrations for existing databases (idempotent)
+-- If you already ran an earlier version of this schema, these
+-- statements add the new columns safely.
+-- ============================================================
+
+alter table store_setting
+  add column if not exists ai_provider text not null default 'gemini',
+  add column if not exists ai_model text not null default 'gemini-3.5-flash';
+
+alter table store_setting
+  alter column local_delivery_cost_usd set default 0;

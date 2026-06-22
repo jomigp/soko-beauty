@@ -1,15 +1,8 @@
 /**
  * components/Logo.tsx — Wordmark logo for Soko Beauty.
  *
- * SVG that mirrors the brand profile image: Bodoni Moda wordmark with
- * the Luminous Core gradient (fuchsia → coral) and a small accent dot.
- * Used in the header, footer, and the brand profile.
- *
- * Sizing options:
- *   - size="sm"  (28px)  — admin chips, compact contexts
- *   - size="md"  (40px)  — desktop header
- *   - size="lg"  (56px)  — hero contexts
- *   - height=N   — explicit pixel override (takes precedence over size)
+ * "SOKO" en mayúsculas + "Beauty" en case normal, con un punto
+ * fucsia como acento. Mismo gradiente Luminous Core.
  */
 
 import { clsx } from "clsx";
@@ -22,9 +15,9 @@ interface LogoProps {
 }
 
 const SIZES = {
-  sm: { fontSize: 20, height: 28 },
-  md: { fontSize: 30, height: 40 },
-  lg: { fontSize: 42, height: 56 },
+  sm: { fontSize: 20, height: 28, accentR: 2 },
+  md: { fontSize: 30, height: 40, accentR: 3 },
+  lg: { fontSize: 42, height: 56, accentR: 4.5 },
 } as const;
 
 export function Logo({
@@ -33,9 +26,8 @@ export function Logo({
   showTagline = false,
   className,
 }: LogoProps) {
-  const { fontSize, height: defaultHeight } = SIZES[size];
+  const { fontSize, height: defaultHeight, accentR } = SIZES[size];
   const finalHeight = height ?? defaultHeight;
-  // Scale the viewBox proportionally to the font size
   const viewBoxWidth = 220 * (fontSize / 28);
   const viewBoxHeight = 60 * (fontSize / 28);
 
@@ -66,14 +58,15 @@ export function Logo({
           fill="url(#soko-gradient)"
           letterSpacing="-0.5"
         >
-          Soko Beauty
+          <tspan fontWeight={800}>SOKO</tspan>
+          <tspan dx="6" fontWeight={500} fontStyle="italic">Beauty</tspan>
         </text>
         <circle
-          cx={viewBoxWidth - 10}
-          cy={fontSize * 0.18}
-          r={fontSize * 0.085}
+          cx={viewBoxWidth - 8}
+          cy={fontSize * 0.15}
+          r={accentR}
           fill="#ff00cc"
-          opacity={0.7}
+          opacity={0.8}
         />
       </svg>
       {showTagline && (

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getActiveProducts, getCategories } from "@/lib/supabase-queries";
+import { getProvider } from "@/lib/ai/providers";
 import type { Product } from "@/lib/database.types";
+import type { AIProviderKey } from "@/lib/ai/providers";
+import { supabaseBrowser } from "@/lib/supabase";
 
 /**
  * POST /api/rutina/recomendar
@@ -13,23 +16,15 @@ import type { Product } from "@/lib/database.types";
  *   experience: "principiante" | "intermedio" | "avanzado"
  * }
  *
- * Response: {
- *   ok: true,
- *   routine: {
- *     morning: [{ step, product_slug, reason }],
- *     evening: [{ step, product_slug, reason }],
- *     tips: string[],
- *     summary: string
- *   }
- * }
+ * Response: { ok: true, routine: {...}, provider: "gemini", model: "..." }
  *
- * Uses Google Gemini 2.0 Flash (free tier, 15 RPM, 1500 RPD).
- * The catalog is the source of truth — the AI can only recommend
- * products that exist in the database.
+ * The provider is read from the store_setting row (ai_provider, ai_model),
+ * so the owner can switch from /admin/configuracion without redeploying.
+ * API keys stay in env vars (never in the DB).
  */
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 30; // seconds — Gemini responses can take 5–15s
+export const maxDuration = 30;
 
 interface RoutineRequest {
   skin_type?: string;
@@ -51,9 +46,6 @@ interface Routine {
   tips: string[];
   summary: string;
 }
-
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 const SYSTEM_PROMPT = `Eres una asesora experta en skincare coreano (K-beauty) para la tienda Soko Beauty en Venezuela.
 Tu trabajo: recomendar una rutina personalizada usando SOLO los productos del catálogo que te paso.
@@ -109,7 +101,6 @@ Si el catálogo no tiene productos suficientes para una rutina completa, devuelv
 `.trim();
 }
 
-/** Validate that every product_slug returned by Gemini actually exists in the catalog. */
 function sanitizeRoutine(raw: unknown, catalog: Product[]): Routine {
   const slugs = new Set(catalog.map((p) => p.slug));
   const result = (raw ?? {}) as Partial<Routine>;
@@ -134,7 +125,9 @@ function sanitizeRoutine(raw: unknown, catalog: Product[]): Routine {
     morning: filtered(result.morning).slice(0, 5),
     evening: filtered(result.evening).slice(0, 5),
     tips: Array.isArray(result.tips)
-      ? (result.tips as unknown[]).filter((t) => typeof t === "string").map((t) => String(t).slice(0, 200))
+      ? (result.tips as unknown[])
+          .filter((t) => typeof t === "string")
+          .map((t) => String(t).slice(0, 200))
       : [],
     summary:
       typeof result.summary === "string"
@@ -143,20 +136,18 @@ function sanitizeRoutine(raw: unknown, catalog: Product[]): Routine {
   };
 }
 
-export async function POST(request: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "El generador de rutinas con IA no está configurado. Pídele a tu equipo técnico que añada la variable GEMINI_API_KEY en Vercel (es gratis, ver https://aistudio.google.com/app/apikey).",
-        code: "NO_API_KEY",
-      },
-      { status: 503 }
-    );
-  }
+async function loadStoreConfig() {
+  const supabase = supabaseBrowser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (supabase as any)
+    .from("store_setting")
+    .select("ai_provider, ai_model")
+    .eq("id", 1)
+    .maybeSingle();
+  return data as { ai_provider?: string; ai_model?: string } | null;
+}
 
+export async function POST(request: Request) {
   let body: RoutineRequest;
   try {
     body = (await request.json()) as RoutineRequest;
@@ -167,10 +158,11 @@ export async function POST(request: Request) {
     );
   }
 
-  // Fetch catalog + concern labels in parallel
-  const [products, categories] = await Promise.all([
+  // Fetch catalog + concern labels + store config in parallel
+  const [products, categories, storeCfg] = await Promise.all([
     getActiveProducts(),
     getCategories(),
+    loadStoreConfig(),
   ]);
 
   if (products.length === 0) {
@@ -185,6 +177,27 @@ export async function POST(request: Request) {
     );
   }
 
+  // Pick provider + model from store config (with safe fallbacks)
+  const providerKey = (storeCfg?.ai_provider as AIProviderKey) ?? "gemini";
+  const model = storeCfg?.ai_model ?? "gemini-3.5-flash";
+  const provider = getProvider(providerKey);
+
+  if (!provider.isConfigured()) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "El generador de rutinas con IA no está configurado. Tu tienda está usando " +
+          provider.name +
+          " pero falta la API key. Pídele a tu equipo técnico que añada la variable " +
+          envKeyFor(providerKey) +
+          " en Vercel.",
+        code: "NO_API_KEY",
+      },
+      { status: 503 }
+    );
+  }
+
   const concernLabels: Record<string, string> = {};
   for (const c of categories) {
     if (c.type === "concern") concernLabels[c.slug] = c.name;
@@ -192,67 +205,23 @@ export async function POST(request: Request) {
 
   const userPrompt = buildUserPrompt(body, products, concernLabels);
 
-  // Call Gemini
-  let geminiRes: Response;
+  let rawText: string;
   try {
-    geminiRes = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: SYSTEM_PROMPT }],
-        },
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: userPrompt }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topP: 0.95,
-          topK: 40,
-          maxOutputTokens: 2048,
-          responseMimeType: "application/json",
-        },
-      }),
+    rawText = await provider.generateJSON({
+      system: SYSTEM_PROMPT,
+      user: userPrompt,
+      model,
+      temperature: 0.7,
+      maxOutputTokens: 2048,
     });
   } catch (err) {
     return NextResponse.json(
       {
         ok: false,
-        error: `No se pudo conectar con la IA: ${err instanceof Error ? err.message : "error de red"}`,
-        code: "NETWORK",
-      },
-      { status: 502 }
-    );
-  }
-
-  if (!geminiRes.ok) {
-    const text = await geminiRes.text().catch(() => "");
-    return NextResponse.json(
-      {
-        ok: false,
-        error: `La IA respondió con error ${geminiRes.status}: ${text.slice(0, 200)}`,
-        code: "GEMINI_ERROR",
-      },
-      { status: 502 }
-    );
-  }
-
-  const geminiData = (await geminiRes.json()) as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-    }>;
-  };
-
-  const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "La IA no devolvió contenido. Intenta de nuevo.",
-        code: "EMPTY_RESPONSE",
+        error: `La IA (${provider.name}) respondió con error: ${
+          err instanceof Error ? err.message : "desconocido"
+        }`,
+        code: "PROVIDER_ERROR",
       },
       { status: 502 }
     );
@@ -263,23 +232,14 @@ export async function POST(request: Request) {
   try {
     parsed = JSON.parse(rawText);
   } catch {
-    // Sometimes Gemini wraps JSON in markdown fences; strip them.
-    const stripped = rawText
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/```\s*$/i, "")
-      .trim();
-    try {
-      parsed = JSON.parse(stripped);
-    } catch {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "La IA devolvió una respuesta no-JSON. Intenta de nuevo.",
-          code: "PARSE_ERROR",
-        },
-        { status: 502 }
-      );
-    }
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "La IA devolvió una respuesta no-JSON. Intenta de nuevo.",
+        code: "PARSE_ERROR",
+      },
+      { status: 502 }
+    );
   }
 
   const routine = sanitizeRoutine(parsed, products);
@@ -296,5 +256,18 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true, routine });
+  return NextResponse.json({
+    ok: true,
+    routine,
+    provider: provider.name,
+    model,
+  });
+}
+
+function envKeyFor(provider: AIProviderKey): string {
+  return {
+    gemini: "GEMINI_API_KEY",
+    deepseek: "DEEPSEEK_API_KEY",
+    openai: "OPENAI_API_KEY",
+  }[provider];
 }

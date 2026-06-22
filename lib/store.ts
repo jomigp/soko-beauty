@@ -16,8 +16,10 @@ const DEFAULT_STORE: T = {
   whatsapp_number: "584244273062",
   business_rif: null,
   business_address: null,
-  local_delivery_cost_usd: 3,
+  local_delivery_cost_usd: 0,
   store_pickup_note: "Retiro en tienda, Valencia.",
+  ai_provider: "gemini",
+  ai_model: "gemini-3.5-flash",
   national_shipping_note: "Envío nacional (MRW/Zoom/Tealca), se coordina por WhatsApp.",
   payment_methods: [
     { key: "pago_movil", label: "Pago Móvil", currency: "VES", rate: "bcv", is_active: true },
