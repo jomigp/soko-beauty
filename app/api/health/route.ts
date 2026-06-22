@@ -22,6 +22,13 @@ interface TableStatus {
   error: string | null;
 }
 
+interface ReloadAttempt {
+  attempted: boolean;
+  ok: boolean;
+  error: string | null;
+  functionMissing?: boolean;
+}
+
 interface ProductSample {
   slug: string;
   name: string;
@@ -40,7 +47,7 @@ export async function GET(request: Request) {
   // (the function is created in supabase/schema.sql). This is a
   // no-op cache hint — it doesn't expose any data, just tells
   // PostgREST to re-read the schema.
-  let reloadAttempt: { attempted: boolean; ok: boolean; error: string | null } = {
+  let reloadAttempt: ReloadAttempt = {
     attempted: false,
     ok: false,
     error: null,
@@ -62,7 +69,12 @@ export async function GET(request: Request) {
       );
       reloadAttempt.ok = res.ok;
       if (!res.ok) {
-        reloadAttempt.error = `HTTP ${res.status}: ${await res.text().catch(() => "")}`;
+        const body = await res.text().catch(() => "");
+        reloadAttempt.error = `HTTP ${res.status}: ${body.slice(0, 300)}`;
+        // Detect the specific "function doesn't exist" case
+        if (res.status === 404 && body.includes("reload_schema_cache")) {
+          reloadAttempt.functionMissing = true;
+        }
       }
     } catch (e) {
       reloadAttempt.error = e instanceof Error ? e.message : "unknown";
@@ -170,7 +182,7 @@ export async function GET(request: Request) {
       reloadHint: wantsReload
         ? "Schema cache reload triggered. Wait 3-5 seconds, then re-visit /api/health (without ?reload=true) to see the actual state."
         : null,
-      hints: buildHints(configured, tables, productSamples, wantsReload),
+      hints: buildHints(configured, tables, productSamples, wantsReload, reloadAttempt),
     },
     {
       status: allOk ? 200 : 503,
@@ -183,7 +195,8 @@ function buildHints(
   configured: boolean,
   tables: Record<string, TableStatus>,
   productSamples: ProductSample[],
-  reloadRequested: boolean
+  reloadRequested: boolean,
+  reload: ReloadAttempt
 ): string[] {
   const hints: string[] = [];
   if (!configured) {
@@ -207,7 +220,17 @@ function buildHints(
     } else if (t.error?.toLowerCase().includes("schema cache")) {
       // Surface the fix for the schema cache issue only once
       if (name === "product") {
-        if (reloadRequested) {
+        if (reload.functionMissing) {
+          hints.push(
+            "🔑 La función 'reload_schema_cache' no existe en tu BD. Tienes 2 opciones:"
+          );
+          hints.push(
+            "   A) RÁPIDO (1 línea): En Supabase SQL Editor corre solo:  NOTIFY pgrst, 'reload schema';  → espera 5s → refresca /api/health."
+          );
+          hints.push(
+            "   B) COMPLETO: Copia TODO el archivo https://github.com/jomigp/soko-beauty/blob/main/supabase/SETUP_TODO_EN_UNO.sql → pégalo en SQL Editor → Run. Es idempotente, no rompe. Crea la función + inserta los 6 productos + 13 categorías. Después refresca /api/health."
+          );
+        } else if (reloadRequested) {
           hints.push(
             "⚠️ Schema cache reload attempted. Wait 3-5 seconds, then re-visit /api/health (without ?reload=true) to confirm."
           );
