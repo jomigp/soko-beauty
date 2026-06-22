@@ -83,7 +83,7 @@ export default function CatalogPage() {
           </p>
         </header>
 
-        <div className="sticky top-16 z-nav -mx-margin-mobile mt-4 border-b border-outline-variant/30 bg-background/90 px-margin-mobile py-3 backdrop-blur-md md:-mx-margin-desktop md:px-margin-desktop">
+        <div className="sticky top-20 z-nav -mx-margin-mobile mt-4 border-b border-outline-variant/30 bg-background/90 px-margin-mobile py-3 backdrop-blur-md md:-mx-margin-desktop md:px-margin-desktop">
           <Input
             type="search"
             placeholder="Buscar por nombre o marca…"

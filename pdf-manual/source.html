@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Manual de Usuario — Soko Beauty</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Geist:wght@100..900&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* =========================================================
+       Soko Beauty — User Manual
+       Color system derived from the Luminous Core gradient
+       (fuchsia → coral) and the cream/peach surface palette.
+       ========================================================= */
+
+    :root {
+      --cream: #fdf9f6;
+      --cream-dark: #f1edea;
+      --ink: #1c1b1a;
+      --ink-soft: #583f4e;
+      --primary: #ad0089;
+      --primary-bright: #ff00cc;
+      --primary-soft: #ffaede;
+      --primary-fixed: #ffd8ec;
+      --outline: #dfbdcf;
+      --mint: #006a44;
+      --mint-fixed: #75fbb8;
+
+      --grad-cta: linear-gradient(135deg, #ff00cc 0%, #ff66b2 50%, #ff8a8a 100%);
+      --grad-glow: linear-gradient(135deg, #ad0089 0%, #4b52be 100%);
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+    @page :first {
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      font-size: 10pt;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Geist", "Inter", system-ui, sans-serif;
+      font-feature-settings: "ss01", "cv11";
+      color: var(--ink);
+      background: var(--cream);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Screen-emulation block — open the source HTML and it looks like
+       the PDF, not one giant horizontal page. */
+    @media screen {
+      html { background: #d0d0d0; }
+      body { padding: 20px 0; }
+      body > section.page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto 20px;
+        background: #fff;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      page-break-after: always;
+      position: relative;
+      background: #fff;
+      overflow: hidden;
+    }
+    .page:last-of-type {
+      page-break-after: auto;
+    }
+    .page-content {
+      padding: 18mm 16mm 22mm 16mm;
+      min-height: 100%;
+    }
+
+    /* -------- Cover -------- */
+    .cover {
+      background: var(--grad-cta);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24mm 20mm;
+    }
+    .cover-mark {
+      display: flex;
+      align-items: baseline;
+      gap: 6mm;
+    }
+    .cover-logo {
+      font-family: "Bodoni Moda", "Times New Roman", serif;
+      font-size: 38pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      position: relative;
+    }
+    .cover-logo::after {
+      content: "";
+      position: absolute;
+      right: -8mm;
+      top: 4mm;
+      width: 3mm;
+      height: 3mm;
+      border-radius: 50%;
+      background: #ffffff;
+      opacity: 0.9;
+    }
+    .cover-tag {
+      font-family: "Geist", sans-serif;
+      font-size: 9pt;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+    .cover-eyebrow {
+      font-family: "Geist", sans-serif;
+      font-size: 9pt;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.95;
+      margin-bottom: 6mm;
+    }
+    .cover h1 {
+      font-family: "Bodoni Moda", "Times New Roman", serif;
+      font-weight: 700;
+      font-size: 56pt;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      margin: 0 0 6mm 0;
+    }
+    .cover h1 em {
+      font-style: italic;
+      font-weight: 500;
+    }
+    .cover-sub {
+      font-family: "Geist", sans-serif;
+      font-size: 14pt;
+      line-height: 1.4;
+      font-weight: 400;
+      max-width: 130mm;
+      opacity: 0.95;
+      margin: 0 0 8mm 0;
+    }
+    .cover-sparkle {
+      position: absolute;
+      width: 12mm;
+      height: 12mm;
+      opacity: 0.6;
+    }
+    .cover-sparkle.tl { top: 12mm; right: 20mm; }
+    .cover-sparkle.br { bottom: 30mm; left: 20mm; width: 18mm; height: 18mm; }
+
+    .cover-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      font-size: 9pt;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+    .cover-foot .pill {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 2.5mm 4mm;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    /* -------- Section heads -------- */
+    .eyebrow {
+      font-family: "Geist", sans-serif;
+      font-size: 8.5pt;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin: 0 0 3mm 0;
+    }
+    h1.section-title {
+      font-family: "Bodoni Moda", "Times New Roman", serif;
+      font-size: 36pt;
+      font-weight: 600;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin: 0 0 8mm 0;
+    }
+    h2 {
+      font-family: "Bodoni Moda", "Times New Roman", serif;
+      font-size: 18pt;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--ink);
+      margin: 8mm 0 3mm 0;
+    }
+    h3 {
+      font-family: "Geist", sans-serif;
+      font-size: 11pt;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 5mm 0 2mm 0;
+    }
+    p, li {
+      font-size: 10.5pt;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+    p {
+      margin: 0 0 3mm 0;
+    }
+    p.lead {
+      font-size: 13pt;
+      line-height: 1.45;
+      color: var(--ink-soft);
+      font-weight: 400;
+      margin-bottom: 8mm;
+      max-width: 165mm;
+    }
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+    }
+
+    /* -------- TOC -------- */
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 4mm 0 0 0;
+      counter-reset: toc;
+    }
+    .toc-list li {
+      counter-increment: toc;
+      display: flex;
+      align-items: baseline;
+      padding: 3mm 0;
+      border-bottom: 1px dotted var(--outline);
+      font-size: 11pt;
+    }
+    .toc-list li::before {
+      content: counter(toc, decimal-leading-zero);
+      color: var(--primary);
+      font-family: "Geist", sans-serif;
+      font-weight: 600;
+      font-size: 9pt;
+      letter-spacing: 0.1em;
+      margin-right: 6mm;
+      min-width: 12mm;
+    }
+    .toc-list a {
+      flex: 1;
+      color: var(--ink);
+      border: none;
+      font-weight: 500;
+    }
+    .toc-list .pg {
+      color: var(--ink-soft);
+      font-size: 9pt;
+    }
+
+    /* -------- Step cards (how-to) -------- */
+    .step {
+      display: grid;
+      grid-template-columns: 16mm 1fr;
+      gap: 6mm;
+      padding: 4mm 0;
+      border-top: 1px solid var(--outline);
+    }
+    .step:last-child { border-bottom: 1px solid var(--outline); }
+    .step-num {
+      font-family: "Bodoni Moda", serif;
+      font-size: 30pt;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--primary);
+    }
+    .step h3 {
+      font-family: "Bodoni Moda", serif;
+      font-size: 14pt;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 0 0 1.5mm 0;
+    }
+    .step p {
+      font-size: 10pt;
+      line-height: 1.5;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+
+    /* -------- Quick tables (for FAQ / problem pages) -------- */
+    .qa {
+      margin: 3mm 0 4mm 0;
+      padding: 4mm 5mm;
+      background: var(--cream);
+      border-left: 3px solid var(--primary);
+      border-radius: 2mm;
+    }
+    .qa h3 {
+      margin-top: 0;
+      color: var(--ink);
+    }
+    .qa p { margin: 1.5mm 0 0 0; color: var(--ink-soft); }
+
+    /* -------- Inline code -------- */
+    code, .kbd {
+      font-family: "Geist Mono", "SF Mono", Menlo, monospace;
+      font-size: 9.5pt;
+      background: var(--cream);
+      border: 1px solid var(--outline);
+      padding: 0.5mm 2mm;
+      border-radius: 1.5mm;
+      color: var(--primary);
+    }
+
+    /* -------- Lists -------- */
+    ul, ol { padding-left: 6mm; margin: 0 0 3mm 0; }
+    li { margin-bottom: 1mm; }
+    li::marker { color: var(--primary); }
+
+    /* -------- Summary card (where to find what) -------- */
+    table.cheat {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 4mm 0;
+      font-size: 10pt;
+    }
+    table.cheat th, table.cheat td {
+      text-align: left;
+      padding: 2.5mm 4mm;
+      border-bottom: 1px solid var(--outline);
+    }
+    table.cheat th {
+      font-family: "Geist", sans-serif;
+      font-size: 8.5pt;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--primary);
+      background: var(--cream);
+    }
+    table.cheat td:first-child { color: var(--ink); font-weight: 500; }
+    table.cheat td:last-child  { color: var(--ink-soft); }
+
+    /* -------- Page number / running footer -------- */
+    .running-foot {
+      position: absolute;
+      bottom: 8mm;
+      left: 16mm;
+      right: 16mm;
+      display: flex;
+      justify-content: space-between;
+      font-family: "Geist", sans-serif;
+      font-size: 8pt;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .running-foot .pgno::after {
+      content: counter(page);
+    }
+    body { counter-reset: page; }
+    .page { counter-increment: page; }
+
+    /* -------- Subtle pattern for body pages -------- */
+    .deco {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 8mm;
+      height: 100%;
+      background: var(--grad-cta);
+      opacity: 0.04;
+    }
+
+    /* -------- Pills / callouts -------- */
+    .pill {
+      display: inline-block;
+      padding: 1mm 3mm;
+      border-radius: 999px;
+      background: var(--primary-fixed);
+      color: var(--primary);
+      font-family: "Geist", sans-serif;
+      font-size: 8.5pt;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .pill.mint {
+      background: var(--mint-fixed);
+      color: var(--mint);
+    }
+
+    /* -------- Hero number on open pages -------- */
+    .hero-num {
+      font-family: "Bodoni Moda", serif;
+      font-size: 80pt;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--primary);
+      opacity: 0.12;
+      position: absolute;
+      top: 12mm;
+      right: 16mm;
+      letter-spacing: -0.04em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     COVER
+     ============================================================ -->
+<section class="page cover" id="cover">
+  <svg class="cover-sparkle tl" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+    <path d="M12 0L14 10L24 12L14 14L12 24L10 14L0 12L10 10Z"/>
+  </svg>
+  <svg class="cover-sparkle br" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+    <path d="M12 0L14 10L24 12L14 14L12 24L10 14L0 12L10 10Z"/>
+  </svg>
+
+  <div>
+    <div class="cover-mark">
+      <span class="cover-logo">Soko Beauty</span>
+      <span class="cover-tag">Glass Skin Awaits</span>
+    </div>
+
+    <div style="margin-top: 28mm;">
+      <p class="cover-eyebrow">Manual de la Tienda · Edición 2026</p>
+      <h1>Cómo gestionar tu tienda <em>en línea</em></h1>
+      <p class="cover-sub">
+        Una guía paso a paso para añadir productos, actualizar precios, responder
+        pedidos y mantener tu tienda funcionando — sin tocar código.
+      </p>
+    </div>
+  </div>
+
+  <div class="cover-foot">
+    <span class="pill">Soko Beauty · Valencia, VE</span>
+    <span>0424-4273062</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     TABLA DE CONTENIDO
+     ============================================================ -->
+<section class="page" id="toc">
+  <div class="page-content">
+    <p class="eyebrow">Tabla de Contenido</p>
+    <h1 class="section-title">Lo que vas a encontrar aquí</h1>
+    <p class="lead">
+      Esta guía está organizada por tarea. Si solo quieres hacer una cosa
+      específica, ve directo a la sección con el número correspondiente.
+    </p>
+    <ol class="toc-list">
+      <li><a href="#intro">Empezar aquí</a><span class="pg">página 02</span></li>
+      <li><a href="#login">Cómo entrar al panel</a><span class="pg">página 03</span></li>
+      <li><a href="#productos">Gestionar productos</a><span class="pg">página 04</span></li>
+      <li><a href="#imagenes">Subir fotos de productos</a><span class="pg">página 05</span></li>
+      <li><a href="#tasas">Tasas de cambio</a><span class="pg">página 06</span></li>
+      <li><a href="#pagos">Métodos de pago</a><span class="pg">página 07</span></li>
+      <li><a href="#envios">Envíos y datos de la tienda</a><span class="pg">página 08</span></li>
+      <li><a href="#pedidos">Cómo llegan los pedidos</a><span class="pg">página 09</span></li>
+      <li><a href="#problemas">Problemas comunes</a><span class="pg">página 10</span></li>
+      <li><a href="#resumen">Resumen rápido</a><span class="pg">página 11</span></li>
+    </ol>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     01 — INTRO
+     ============================================================ -->
+<section class="page" id="intro">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">01</span>
+    <p class="eyebrow">Empezar aquí</p>
+    <h1 class="section-title">Tu día a día, en 3 tareas</h1>
+    <p class="lead">
+      Todo lo que vas a hacer en la tienda se reduce a tres cosas. El resto
+      del manual es detalle de cada una.
+    </p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3>Añadir o actualizar productos</h3>
+        <p>Cuando llega mercancía nueva, cambias un precio, o se agota algo.
+          Vas a <strong>Productos</strong>, buscas el producto (o creas uno nuevo),
+          editas lo que necesites y guardas. Listo.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3>Revisar las tasas de cambio</h3>
+        <p>El sistema trae las tasas <strong>automáticas</strong> desde
+          calcu.arepatecnologica.com. Pero si la API falla (pasa pocas veces),
+          entras a <strong>Configuración</strong> y las corriges a mano.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3>Gestionar métodos de pago y envíos</h3>
+        <p>Cuando agregas un nuevo método (ej: Binance USDT), cambias el
+          costo del delivery o actualizas tu número de WhatsApp — todo vive
+          en <strong>Configuración</strong>.</p>
+      </div>
+    </div>
+
+    <div class="qa" style="margin-top: 10mm;">
+      <h3>💡 Principio clave</h3>
+      <p>Si alguna tarea no está cubierta aquí, es porque <strong>es una
+        tarea de Fase 2</strong>: pagos en línea, cuentas por cliente,
+        notificaciones push, etc. Para esas, escríbele al equipo técnico.</p>
+    </div>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     02 — LOGIN
+     ============================================================ -->
+<section class="page" id="login">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">02</span>
+    <p class="eyebrow">Cómo entrar al panel</p>
+    <h1 class="section-title">3 pasos para entrar</h1>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3>Abre la URL del panel</h3>
+        <p>En tu navegador, ve a <code>tudominio.com/admin</code> (reemplaza
+          con tu dominio real). Te va a pedir una contraseña.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3>Ingresa la contraseña</h3>
+        <p>Es la que tu equipo técnico configuró en la variable
+          <code>ADMIN_PASSWORD</code> de Vercel. Pídela si no la tienes.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3>Explora las 3 secciones</h3>
+        <p>Una vez dentro, la barra lateral izquierda muestra:<br>
+          <span class="pill">Resumen</span> — vista general · productos, tasas, WhatsApp<br>
+          <span class="pill">Productos</span> — gestionar tu catálogo<br>
+          <span class="pill">Configuración</span> — tasas, métodos de pago, datos de la tienda</p>
+      </div>
+    </div>
+
+    <div class="qa" style="margin-top: 10mm;">
+      <h3>🔒 Sobre la sesión</h3>
+      <p>La sesión dura <strong>8 horas</strong>. Cuando salgas con el botón
+        <em>Salir</em> (arriba a la derecha), tienes que volver a ingresar
+        la contraseña. Esto protege tu tienda si dejas la computadora abierta.</p>
+    </div>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     03 — PRODUCTOS
+     ============================================================ -->
+<section class="page" id="productos">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">03</span>
+    <p class="eyebrow">Gestionar productos</p>
+    <h1 class="section-title">Tu catálogo, en 4 acciones</h1>
+    <p class="lead">
+      Toda la gestión del catálogo vive en la sección <strong>Productos</strong>.
+      Aquí están las operaciones disponibles.
+    </p>
+
+    <h2>Añadir un producto nuevo</h2>
+    <p>Click en <strong>Nuevo Producto</strong> (esquina superior derecha).
+      Llena el formulario con esta guía rápida:</p>
+    <table class="cheat">
+      <thead>
+        <tr><th>Campo</th><th>Qué poner</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Slug</td><td>URL del producto, sin espacios, minúsculas, guiones. <br><code>cosrx-snail-mucin-essence</code></td></tr>
+        <tr><td>Nombre</td><td>El nombre tal como quieres que aparezca.</td></tr>
+        <tr><td>Marca</td><td>La marca del producto (COSRX, Beauty of Joseon, etc.).</td></tr>
+        <tr><td>Precio (USD)</td><td>Precio en dólares. Es el precio BCV de referencia.</td></tr>
+        <tr><td>Paso de rutina</td><td>Opcional. Si pertenece a un paso: limpiador, tónico, esencia, sérum, hidratante, SPF…</td></tr>
+        <tr><td>Imágenes</td><td>URLs de las fotos, una por línea. Ver página siguiente.</td></tr>
+        <tr><td>Necesidades</td><td>Separadas por coma: hidratación, acné, brillo, antiedad…</td></tr>
+        <tr><td>Tipos de piel</td><td>Separados por coma: seca, grasa, mixta, sensible…</td></tr>
+        <tr><td>En stock</td><td>Marcado = visible en la tienda. Desmarca si está agotado.</td></tr>
+        <tr><td>Destacado</td><td>Marcado = aparece en la home.</td></tr>
+        <tr><td>Badge</td><td>Opcional: <em>Best Seller</em> o <em>Nuevo</em>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     04 — IMÁGENES
+     ============================================================ -->
+<section class="page" id="imagenes">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">04</span>
+    <p class="eyebrow">Subir fotos de productos</p>
+    <h1 class="section-title">Imágenes rápidas = tienda rápida</h1>
+    <p class="lead">
+      Las fotos <strong>no se suben desde el panel</strong>. Se suben directo
+      a Supabase Storage. La web las lee desde ahí. En Venezuela, cada KB
+      cuenta: optimiza siempre antes de subir.
+    </p>
+
+    <h2>Cómo subir una imagen</h2>
+    <ol>
+      <li>Ve a <code>supabase.com</code> → tu proyecto → <strong>Storage</strong> → bucket <code>product-images</code>.</li>
+      <li>Click <strong>Upload file</strong> y arrastra tu imagen.</li>
+      <li>Click derecho sobre la imagen subida → <strong>Copy URL</strong>.</li>
+      <li>Pega esa URL en el campo <em>Imágenes</em> del producto (una por línea).</li>
+    </ol>
+
+    <div class="qa">
+      <h3>⚡ Optimización antes de subir (importante)</h3>
+      <p>Antes de subir cada foto, redimensiona a <strong>800×800 px</strong>
+        o <strong>1000×1000 px</strong> en formato <em>WebP</em> o <em>JPG</em>
+        comprimido a menos de <strong>200 KB</strong>. Esto es crítico para
+        que la página cargue rápido en 4G en Venezuela. Herramientas gratuitas:
+        <code>squoosh.app</code> o <code>tinyjpg.com</code>.</p>
+    </div>
+
+    <h2>Otras operaciones del catálogo</h2>
+    <table class="cheat">
+      <thead><tr><th>Quiero…</th><th>Hago esto</th></tr></thead>
+      <tbody>
+        <tr><td>Editar un producto</td><td>Click en el ícono de lápiz <strong>✏️</strong> a la derecha.</td></tr>
+        <tr><td>Marcar como agotado</td><td>Editar → desmarcar <em>En stock</em> → Guardar.</td></tr>
+        <tr><td>Eliminar un producto</td><td>Click en papelera <strong>🗑️</strong> → Confirmar. (No se puede deshacer.)</td></tr>
+        <tr><td>Reordenar productos</td><td>Editar → cambiar el campo <em>Orden</em> (menor = primero).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     05 — TASAS
+     ============================================================ -->
+<section class="page" id="tasas">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">05</span>
+    <p class="eyebrow">Tasas de cambio</p>
+    <h1 class="section-title">Automático, con plan B</h1>
+    <p class="lead">
+      Las tasas se actualizan <strong>solas</strong> desde
+      <code>calcu.arepatecnologica.com</code> cada 30 minutos. Normalmente
+      no tienes que tocarlas. Pero si la API se cae, el sistema usa la
+      última buena tasa guardada y marca un aviso discreto.
+    </p>
+
+    <h2>Cuándo SÍ tocarlas</h2>
+    <ul>
+      <li>Si los precios de la web se ven raros o en 0.</li>
+      <li>Si la API de calcu lleva más de 1 hora sin responder.</li>
+      <li>Si quieres forzar una tasa puntual (ej: un tipo de cambio que
+        sabes que va a cambiar en 10 minutos).</li>
+    </ul>
+
+    <h2>Cómo editarlas manualmente</h2>
+    <ol>
+      <li>Ve a <strong>Configuración</strong>.</li>
+      <li>En la sección <em>Tasas de Cambio</em>, edita los dos campos:
+        <br><strong>Tasa BCV (USD)</strong> — el valor oficial del Banco Central de Venezuela.
+        <br><strong>Tasa Paralelo (USD)</strong> — el valor del dólar paralelo (EnParalelo / Monitor).
+      </li>
+      <li>Click <strong>Guardar Cambios</strong>.</li>
+    </ol>
+
+    <div class="qa">
+      <h3>💡 Cómo se calcula el "ahorro" que ve el cliente</h3>
+      <p>Cuando el cliente paga en USD (Zelle, USDT, etc.), el precio se
+        calcula a la tasa paralelo en vez de a la BCV. El sistema muestra
+        automáticamente algo como <em>"Ahorras 22%"</em>. La fórmula es
+        <code>1 − tasa_bcv / tasa_usdt</code>. Si BCV es 612 y paralelo es
+        800, el ahorro es 23.5%. <strong>No tienes que calcularlo tú.</strong></p>
+    </div>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     06 — PAGOS
+     ============================================================ -->
+<section class="page" id="pagos">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">06</span>
+    <p class="eyebrow">Métodos de pago</p>
+    <h1 class="section-title">Configura los métodos que aceptas</h1>
+    <p class="lead">
+      La web muestra al cliente los métodos de pago que tú actives. Cada
+      método tiene una moneda (Bs o USD) y la tasa a la que se calcula.
+      Mantén solo los que realmente usas.
+    </p>
+
+    <h2>Estructura de un método</h2>
+    <table class="cheat">
+      <thead><tr><th>Campo</th><th>Qué significa</th></tr></thead>
+      <tbody>
+        <tr><td>Key</td><td>Identificador interno, no lo cambies a menos que sepas lo que haces.</td></tr>
+        <tr><td>Etiqueta visible</td><td>Lo que ve el cliente: "Pago Móvil", "Zelle", "USDT (Binance)", etc.</td></tr>
+        <tr><td>Moneda</td><td><strong>VES</strong> para bolívares, <strong>USD</strong> para dólares.</td></tr>
+        <tr><td>Tasa</td><td><strong>BCV</strong> si la moneda es VES. <strong>Paralelo</strong> si la moneda es USD.</td></tr>
+        <tr><td>Ajuste (%)</td><td>Opcional. Positivo = recargo, negativo = descuento extra.</td></tr>
+        <tr><td>Activo</td><td>Desmárcalo para ocultar el método sin eliminarlo.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Operaciones</h2>
+    <ul>
+      <li><strong>Añadir método:</strong> Click <em>Añadir Método</em>, completa, Guardar.</li>
+      <li><strong>Editar método existente:</strong> Modifica los campos directamente en la lista.</li>
+      <li><strong>Eliminar método:</strong> Click en el ícono de papelera a la derecha.</li>
+      <li><strong>Guardar todo:</strong> Click <strong>Guardar Cambios</strong> al final del formulario.</li>
+    </ul>
+
+    <div class="qa">
+      <h3>🛡️ Los datos de tus cuentas NUNCA se publican en la web</h3>
+      <p>Por seguridad, los números de cuenta, teléfonos Pago Móvil, correos
+        Zelle, etc. <strong>no se exponen en la web</strong>. Se los das al
+        cliente directamente por WhatsApp cuando confirma el pedido. Así
+        evitas que te los scrapeen.</p>
+    </div>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     07 — ENVÍOS
+     ============================================================ -->
+<section class="page" id="envios">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">07</span>
+    <p class="eyebrow">Envíos y datos de la tienda</p>
+    <h1 class="section-title">Tu info operativa</h1>
+    <p class="lead">
+      Todo lo que el cliente ve sobre la tienda: tu número de WhatsApp, RIF,
+      dirección, costos de delivery, notas. Se edita en
+      <strong>Configuración → Tienda</strong>.
+    </p>
+
+    <table class="cheat">
+      <thead><tr><th>Campo</th><th>Para qué sirve</th></tr></thead>
+      <tbody>
+        <tr><td>Número de WhatsApp</td><td>El número que recibe los pedidos. <strong>Siempre con código de país, sin +</strong>. Ej: <code>584244273062</code>.</td></tr>
+        <tr><td>RIF</td><td>Aparece al final del mensaje de WhatsApp. Ej: <code>J-12345678-9</code>.</td></tr>
+        <tr><td>Dirección de la tienda</td><td>Tu dirección física. Aparece en la sección "Retiro en tienda".</td></tr>
+        <tr><td>Costo delivery Valencia</td><td>Lo que se suma al total cuando el cliente elige delivery local (USD).</td></tr>
+        <tr><td>Nota retiro en tienda</td><td>Mensaje que ve el cliente (horario, referencia).</td></tr>
+        <tr><td>Nota envío nacional</td><td>Mensaje para envío nacional (couriers, "se coordina por WhatsApp").</td></tr>
+      </tbody>
+    </table>
+
+    <div class="qa">
+      <h3>🚚 ¿Cuándo se cobra el envío nacional?</h3>
+      <p>El envío nacional (MRW / Zoom / Tealca) <strong>no se calcula
+        automáticamente</strong> porque depende del peso y la ciudad de
+        destino. El cliente elige esa opción, tú le pides la dirección
+        por WhatsApp, le cotizas el envío con el courier, y confirman
+        juntos.</p>
+    </div>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     08 — PEDIDOS
+     ============================================================ -->
+<section class="page" id="pedidos">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">08</span>
+    <p class="eyebrow">Cómo llegan los pedidos</p>
+    <h1 class="section-title">Por WhatsApp, en texto plano</h1>
+    <p class="lead">
+      Los pedidos <strong>no se guardan en la web</strong>. Llegan directo
+      a tu WhatsApp como un mensaje, con el detalle completo y el total
+      ya calculado.
+    </p>
+
+    <h2>Formato del mensaje</h2>
+    <p>Esto es lo que vas a recibir en tu WhatsApp:</p>
+
+    <div style="background: #f8f5f2; border-radius: 4mm; padding: 5mm 6mm; font-family: 'Geist Mono', monospace; font-size: 9pt; line-height: 1.55; color: #1c1b1a; border: 1px solid var(--outline);">
+      <strong style="color: var(--primary);">🧴 NUEVO PEDIDO — Soko Beauty</strong><br><br>
+      👤 Cliente: María Pérez&nbsp;&nbsp;&nbsp;📱 0424-1234567<br><br>
+      🛒 <strong>Productos:</strong><br>
+      &nbsp;&nbsp;• 2 x Sérum Vitamina C — $36,00<br>
+      &nbsp;&nbsp;• 1 x Protector Solar SPF50 — $12,00<br>
+      &nbsp;&nbsp;Subtotal (precio BCV): <strong>$48,00</strong><br><br>
+      🚚 Entrega: Delivery Valencia (+$3,00)<br>
+      🏦 Tasas: BCV 612.43 · USDT 784.8<br><br>
+      💳 <strong>Método elegido: USDT</strong><br>
+      👉 <strong>TOTAL A PAGAR: $39,02</strong>
+      &nbsp;&nbsp;(equiv. Bs 30.630,94)&nbsp;&nbsp;<em>Ahorras 22%</em><br><br>
+      📍 Av. Cabriales, Valencia<br>
+      📝 Notas: Por favor entregar después de las 4pm
+    </div>
+
+    <h2 style="margin-top: 8mm;">Tu flujo al recibir un pedido</h2>
+    <ol>
+      <li><strong>Lee el pedido</strong> y responde al cliente por WhatsApp.</li>
+      <li><strong>Coordina el pago</strong>. Los datos de Pago Móvil, Zelle, Binance, etc. NO están en la web — se los das tú por chat cuando confirmen.</li>
+      <li><strong>Coordina la entrega</strong> (delivery Valencia, retiro en tienda, o envío nacional).</li>
+      <li>Si es envío nacional, <strong>pídele la dirección completa</strong> y cotiza con MRW/Zoom/Tealca antes de confirmar.</li>
+    </ol>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     09 — PROBLEMAS
+     ============================================================ -->
+<section class="page" id="problemas">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">09</span>
+    <p class="eyebrow">Problemas comunes</p>
+    <h1 class="section-title">Cuando algo no funciona</h1>
+    <p class="lead">
+      El 90% de los problemas se resuelven con estas soluciones rápidas. Si
+      nada funciona, escríbele a tu equipo técnico con la info de abajo.
+    </p>
+
+    <div class="qa">
+      <h3>😵 "La página se ve rara / sin estilos"</h3>
+      <p>Borra el caché del navegador (<code>Ctrl+Shift+R</code> en PC,
+        <code>Cmd+Shift+R</code> en Mac) o prueba en una ventana de incógnito.
+        Si persiste, escríbele al equipo técnico.</p>
+    </div>
+
+    <div class="qa">
+      <h3>💸 "Los precios están en 0 / 612 / raros"</h3>
+      <p>La API de calcu.arepatecnologica.com falló. Ve a
+        <strong>Configuración</strong> y edita las tasas manualmente. Si pasa
+        seguido, avísale al equipo técnico para que revisen la API.</p>
+    </div>
+
+    <div class="qa">
+      <h3>📱 "Un cliente dice que no le llegó el pedido"</h3>
+      <p>Revisa tu WhatsApp — el pedido llega como mensaje. Si no está,
+        pregúntale al cliente si le salió la pantalla de "¡Pedido Enviado!"
+        y si le dio click al botón de WhatsApp. Si dice que sí pero no le
+        llegó nada, escríbele al equipo técnico.</p>
+    </div>
+
+    <div class="qa">
+      <h3>🔐 "Quiero cambiar la contraseña del panel"</h3>
+      <p>Pídele al equipo técnico que cambie la variable
+        <code>ADMIN_PASSWORD</code> en Vercel (Settings → Environment
+        Variables). El cambio aplica al próximo deploy.</p>
+    </div>
+
+    <div class="qa">
+      <h3>🆘 "Necesito ayuda del equipo técnico"</h3>
+      <p>Mándales: (1) <strong>captura de pantalla</strong> del error, (2)
+        <strong>qué estabas haciendo</strong> cuando pasó, (3) <strong>qué
+        navegador</strong> usas (Chrome, Safari, etc.), y (4) la hora
+        aproximada.</p>
+    </div>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+<!-- ============================================================
+     10 — RESUMEN
+     ============================================================ -->
+<section class="page" id="resumen">
+  <div class="deco"></div>
+  <div class="page-content">
+    <span class="hero-num">10</span>
+    <p class="eyebrow">Resumen rápido</p>
+    <h1 class="section-title">Cheat sheet</h1>
+    <p class="lead">
+      Una sola página con todo lo que vas a necesitar. Imprímela o pégala
+      al lado de tu computador.
+    </p>
+
+    <h2>¿Dónde está cada cosa?</h2>
+    <table class="cheat">
+      <thead><tr><th>Necesito…</th><th>Voy a…</th></tr></thead>
+      <tbody>
+        <tr><td>Añadir un producto</td><td>Productos → Nuevo Producto</td></tr>
+        <tr><td>Cambiar precio</td><td>Productos → Lápiz del producto</td></tr>
+        <tr><td>Marcar como agotado</td><td>Productos → Lápiz → desmarcar "En stock"</td></tr>
+        <tr><td>Cambiar las tasas</td><td>Configuración → Tasas de Cambio</td></tr>
+        <tr><td>Activar método de pago</td><td>Configuración → Métodos de Pago</td></tr>
+        <tr><td>Cambiar el WhatsApp</td><td>Configuración → Tienda</td></tr>
+        <tr><td>Cambiar costo de delivery</td><td>Configuración → Tienda</td></tr>
+        <tr><td>Ver productos en stock</td><td>Productos (columna "Estado")</td></tr>
+        <tr><td>Salir del panel</td><td>Botón "Salir" arriba a la derecha</td></tr>
+      </tbody>
+    </table>
+
+    <h2 style="margin-top: 6mm; font-size: 16pt;">Lo que el panel NO hace (todavía)</h2>
+    <ul style="font-size: 9.5pt; line-height: 1.45;">
+      <li>❌ Ver historial de pedidos — los pedidos viven en WhatsApp.</li>
+      <li>❌ Notificaciones push — abre WhatsApp para verlos.</li>
+      <li>❌ Múltiples usuarios / empleados con login propio.</li>
+      <li>❌ Cobro en línea — el cliente paga por WhatsApp.</li>
+      <li>❌ Reseñas de productos · ❌ Cupones de descuento.</li>
+    </ul>
+    <p style="margin-top: 2mm; font-size: 10pt;">Todo eso es <strong>Fase 2</strong>,
+      después del lanzamiento.</p>
+
+    <p style="margin-top: 6mm; padding: 3mm 5mm; border-left: 3px solid var(--primary); background: var(--cream); border-radius: 1.5mm; font-size: 10pt;">
+      💜 <strong>Gracias por usar Soko Beauty.</strong> Si tienes ideas para
+      mejorar la tienda, mándalas por WhatsApp al equipo técnico. Esta es tu
+      tienda, y se construye contigo.
+    </p>
+  </div>
+  <div class="running-foot">
+    <span>Manual Soko Beauty</span>
+    <span class="pgno">· </span>
+  </div>
+</section>
+
+</body>
+</html>

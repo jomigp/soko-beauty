@@ -24,7 +24,7 @@ export function TopBar() {
   return (
     <header
       className={cn(
-        "fixed left-0 right-0 top-0 z-nav-sticky h-16 border-b border-outline-variant/20 glass-panel"
+        "fixed left-0 right-0 top-0 z-nav-sticky h-20 border-b border-outline-variant/20 glass-panel"
       )}
     >
       <div className="mx-auto flex h-full max-w-site items-center justify-between px-margin-mobile md:px-margin-desktop">
@@ -38,7 +38,7 @@ export function TopBar() {
           <Menu className="h-6 w-6" aria-hidden="true" />
         </button>
         <Link href="/" aria-label="Ir al inicio" className="md:ml-0">
-          <Logo size="sm" />
+          <Logo size="md" height={44} />
         </Link>
         <nav aria-label="Navegación" className="hidden md:block">
           <ul className="flex items-center gap-lg">
@@ -71,7 +71,7 @@ export function TopBar() {
       {/* Mobile menu drawer */}
       {mobileMenuOpen && (
         <div
-          className="absolute left-0 right-0 top-16 border-b border-outline-variant/30 bg-surface-container-lowest shadow-md md:hidden"
+          className="absolute left-0 right-0 top-20 border-b border-outline-variant/30 bg-surface-container-lowest shadow-md md:hidden"
           role="menu"
         >
           <ul className="flex flex-col px-margin-mobile py-2">
