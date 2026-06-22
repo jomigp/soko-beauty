@@ -6,11 +6,18 @@
 -- ============================================================
 
 -- ---------- ENUMS ----------
-create type badge_kind as enum ('best_seller', 'new');
-create type category_type as enum ('routine_step', 'concern');
+do $$ begin
+  create type badge_kind as enum ('best_seller', 'new');
+exception when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type category_type as enum ('routine_step', 'concern');
+exception when duplicate_object then null;
+end $$;
 
 -- ---------- TABLES ----------
-create table product (
+create table if not exists product (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique,
   name text not null,
@@ -35,7 +42,7 @@ create index product_featured_idx on product (is_featured, sort_order);
 create index product_routine_step_idx on product (routine_step);
 create index product_in_stock_idx on product (in_stock);
 
-create table category (
+create table if not exists category (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique,
   name text not null,
@@ -46,7 +53,7 @@ create table category (
 create index category_type_idx on category (type, sort_order);
 
 -- Single-row config table; we keep `id = 1` as a singleton.
-create table store_setting (
+create table if not exists store_setting (
   id integer primary key default 1 check (id = 1),
   tasa_bcv numeric(12, 4) not null check (tasa_bcv > 0),
   tasa_usdt numeric(12, 4) not null check (tasa_usdt > 0),
@@ -78,7 +85,8 @@ insert into store_setting (
   ]'::jsonb,
   'gemini',
   'gemini-3.5-flash'
-);
+)
+on conflict (id) do nothing;
 
 -- ---------- ROW-LEVEL SECURITY ----------
 alter table product enable row level security;
@@ -86,14 +94,23 @@ alter table category enable row level security;
 alter table store_setting enable row level security;
 
 -- Public read access (the site is a catalog)
-create policy "product: public read" on product
-  for select using (true);
+do $$ begin
+  create policy "product: public read" on product
+    for select using (true);
+exception when duplicate_object then null;
+end $$;
 
-create policy "category: public read" on category
-  for select using (true);
+do $$ begin
+  create policy "category: public read" on category
+    for select using (true);
+exception when duplicate_object then null;
+end $$;
 
-create policy "store_setting: public read" on store_setting
-  for select using (true);
+do $$ begin
+  create policy "store_setting: public read" on store_setting
+    for select using (true);
+exception when duplicate_object then null;
+end $$;
 
 -- Writes are only allowed via the service-role key (server-side / admin).
 -- No anon write policies → the public client cannot modify data.
@@ -105,8 +122,11 @@ insert into storage.buckets (id, name, public)
 values ('product-images', 'product-images', true)
 on conflict (id) do nothing;
 
-create policy "product-images: public read" on storage.objects
-  for select using (bucket_id = 'product-images');
+do $$ begin
+  create policy "product-images: public read" on storage.objects
+    for select using (bucket_id = 'product-images');
+exception when duplicate_object then null;
+end $$;
 
 -- ============================================================
 -- Migrations for existing databases (idempotent)
