@@ -28,7 +28,7 @@ export default function TerminosPage() {
               1. Aceptación
             </h2>
             <p className="mt-2">
-              Al usar sokobeauty.ve aceptas estos términos. Si no estás de
+              Al usar soko-beauty-sigma.vercel.app aceptas estos términos. Si no estás de
               acuerdo, no uses el sitio.
             </p>
           </div>

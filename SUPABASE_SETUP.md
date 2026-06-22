@@ -12,7 +12,7 @@ Tiempo estimado: **10–15 minutos**.
 3. Rellena:
    - **Name:** `soko-beauty`
    - **Database Password:** genera una fuerte y **guárdala en un password manager** (no la vas a necesitar a menudo, pero si la pierdes hay que resetear).
-   - **Region:** `South America (São Paulo)` ← la más cercana a Venezuela, igual que la región de Vercel.
+   - **Region:** `South America (São Paulo)` ← la más cercana a Venezuela, igual que la región de Vercel (URL: https://soko-beauty-sigma.vercel.app).
    - **Plan:** Free (suficiente para MVP; si llegas a 500 MB de imágenes o 2 GB de tráfico, subes a Pro).
 4. Click **"Create new project"**. Tarda 1–2 minutos en aprovisionar.
 
@@ -145,7 +145,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://abcdefg.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
 NEXT_PUBLIC_WHATSAPP_NUMBER=584244273062
-NEXT_PUBLIC_SITE_URL=https://sokobeauty.ve
+NEXT_PUBLIC_SITE_URL=https://soko-beauty-sigma.vercel.app
 DOLARVZLA_API_KEY=
 ADMIN_PASSWORD=una-clave-segura-aqui
 ```

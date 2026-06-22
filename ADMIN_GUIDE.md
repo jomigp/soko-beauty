@@ -18,7 +18,7 @@ Todo se hace desde el **panel de administración**.
 
 ## 🚪 Cómo entrar al panel
 
-1. Abre en tu navegador: **https://TU-DOMINIO.vercel.app/admin**
+1. Abre en tu navegador: **https://soko-beauty-sigma.vercel.app/admin**
 2. Te va a pedir una contraseña. Es la que tu equipo técnico configuró en la variable `ADMIN_PASSWORD` de Vercel.
 3. Una vez dentro, verás 3 secciones en la barra lateral:
    - **Resumen** — vista general con cantidad de productos, tasas actuales, WhatsApp configurado.

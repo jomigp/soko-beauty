@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { getActiveProducts, getCategories } from "@/lib/supabase-queries";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://sokobeauty.ve";
+const SITE =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://soko-beauty-sigma.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, categories] = await Promise.all([
