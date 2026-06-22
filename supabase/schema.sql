@@ -37,10 +37,10 @@ create table if not exists product (
   created_at timestamptz not null default now()
 );
 
-create index product_slug_idx on product (slug);
-create index product_featured_idx on product (is_featured, sort_order);
-create index product_routine_step_idx on product (routine_step);
-create index product_in_stock_idx on product (in_stock);
+create index if not exists product_slug_idx on product (slug);
+create index if not exists product_featured_idx on product (is_featured, sort_order);
+create index if not exists product_routine_step_idx on product (routine_step);
+create index if not exists product_in_stock_idx on product (in_stock);
 
 create table if not exists category (
   id uuid primary key default gen_random_uuid(),
@@ -50,7 +50,7 @@ create table if not exists category (
   sort_order integer not null default 0
 );
 
-create index category_type_idx on category (type, sort_order);
+create index if not exists category_type_idx on category (type, sort_order);
 
 -- Single-row config table; we keep `id = 1` as a singleton.
 create table if not exists store_setting (
