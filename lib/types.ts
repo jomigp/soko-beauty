@@ -26,7 +26,10 @@ export interface PaymentMethod {
 
 export interface Rates {
   tasa_bcv: number;
+  /** Parallel rate. From calcu.arepatecnologica.com = Paralelo. */
   tasa_usdt: number;
+  /** BCV EUR rate. Optional — not used by the multi-tasa engine today. */
+  tasa_eur?: number;
   /** ISO timestamp of when these rates were last fetched/updated */
   updated_at?: string;
 }
