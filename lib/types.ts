@@ -44,9 +44,11 @@ export interface DeliveryOption {
 
 export interface CartItem {
   product_id: string;
+  slug?: string;
   name: string;
   brand: string;
   unit_price_usd: number;
+  image?: string;
   qty: number;
 }
 

@@ -64,53 +64,55 @@ export interface PaymentMethodConfig {
   is_active?: boolean;
 }
 
+type StoreSettingRow = {
+  id: number;
+  tasa_bcv: number;
+  tasa_usdt: number;
+  rates_updated_at: string;
+  whatsapp_number: string;
+  business_rif: string | null;
+  business_address: string | null;
+  local_delivery_cost_usd: number;
+  store_pickup_note: string | null;
+  national_shipping_note: string | null;
+  payment_methods: PaymentMethodConfig[];
+};
+
+type StoreSettingInsert = Omit<StoreSettingRow, "id">;
+
+type StoreSettingUpdate = Partial<{
+  tasa_bcv: number;
+  tasa_usdt: number;
+  rates_updated_at: string;
+  whatsapp_number: string;
+  business_rif: string | null;
+  business_address: string | null;
+  local_delivery_cost_usd: number;
+  store_pickup_note: string | null;
+  national_shipping_note: string | null;
+  payment_methods: PaymentMethodConfig[];
+}>;
+
 export interface Database {
   public: {
     Tables: {
-      product: { Row: Product; Insert: Omit<Product, "id" | "created_at"> & { id?: string; created_at?: string }; Update: Partial<Product> };
-      category: { Row: Category; Insert: Omit<Category, "id"> & { id?: string }; Update: Partial<Category> };
-      store_setting: {
-        Row: {
-          id: number;
-          tasa_bcv: number;
-          tasa_usdt: number;
-          rates_updated_at: string;
-          whatsapp_number: string;
-          business_rif: string | null;
-          business_address: string | null;
-          local_delivery_cost_usd: number;
-          store_pickup_note: string | null;
-          national_shipping_note: string | null;
-          payment_methods: PaymentMethodConfig[];
+      product: {
+        Row: Product;
+        Insert: Omit<Product, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
         };
-        Insert: Omit<
-          {
-            id?: number;
-            tasa_bcv: number;
-            tasa_usdt: number;
-            rates_updated_at: string;
-            whatsapp_number: string;
-            business_rif: string | null;
-            business_address: string | null;
-            local_delivery_cost_usd: number;
-            store_pickup_note: string | null;
-            national_shipping_note: string | null;
-            payment_methods: PaymentMethodConfig[];
-          },
-          "id"
-        >;
-        Update: Partial<{
-          tasa_bcv: number;
-          tasa_usdt: number;
-          rates_updated_at: string;
-          whatsapp_number: string;
-          business_rif: string | null;
-          business_address: string | null;
-          local_delivery_cost_usd: number;
-          store_pickup_note: string | null;
-          national_shipping_note: string | null;
-          payment_methods: PaymentMethodConfig[];
-        }>;
+        Update: Partial<Product>;
+      };
+      category: {
+        Row: Category;
+        Insert: Omit<Category, "id"> & { id?: string };
+        Update: Partial<Category>;
+      };
+      store_setting: {
+        Row: StoreSettingRow;
+        Insert: StoreSettingInsert;
+        Update: StoreSettingUpdate;
       };
     };
     Views: Record<string, never>;

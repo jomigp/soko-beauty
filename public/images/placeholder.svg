@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fdf9f6" />
+      <stop offset="100%" stop-color="#f1edea" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg)" />
+  <g transform="translate(400 400)" fill="none" stroke="#dfbdcf" stroke-width="2">
+    <circle r="80" />
+    <circle r="120" opacity="0.5" />
+    <circle r="160" opacity="0.25" />
+  </g>
+  <text x="400" y="640" text-anchor="middle" font-family="Geist, system-ui, sans-serif" font-size="20" fill="#8c6f7f" font-weight="500" letter-spacing="0.1em">
+    SOKO BEAUTY
+  </text>
+</svg>
