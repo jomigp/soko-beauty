@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -14,6 +14,7 @@ import {
   Moon,
   RefreshCw,
   ChevronRight,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { GlowChip } from "@/components/GlowChip";
@@ -37,6 +38,50 @@ interface Routine {
   tips: string[];
   summary: string;
 }
+
+/* ============================================================
+   Client-side rate limit (server is source of truth).
+   localStorage just avoids an extra round-trip when the user
+   is already at the limit.
+   ============================================================ */
+
+const DAILY_LIMIT = 3;
+const STORAGE_KEY = "soko_routine_count";
+const STORAGE_DATE_KEY = "soko_routine_date";
+
+function todayLocal(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getUsage(): { date: string; count: number } {
+  if (typeof window === "undefined") return { date: todayLocal(), count: 0 };
+  try {
+    const date = localStorage.getItem(STORAGE_DATE_KEY) ?? todayLocal();
+    const count = parseInt(localStorage.getItem(STORAGE_KEY) ?? "0", 10);
+    if (date !== todayLocal()) {
+      localStorage.setItem(STORAGE_DATE_KEY, todayLocal());
+      localStorage.setItem(STORAGE_KEY, "0");
+      return { date: todayLocal(), count: 0 };
+    }
+    return { date, count: isNaN(count) ? 0 : count };
+  } catch {
+    return { date: todayLocal(), count: 0 };
+  }
+}
+
+function setUsage(count: number) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_DATE_KEY, todayLocal());
+    localStorage.setItem(STORAGE_KEY, String(count));
+  } catch {
+    /* ignore */
+  }
+}
+
+/* ============================================================
+   Form options
+   ============================================================ */
 
 const SKIN_TYPES: Array<{ key: SkinType; label: string; desc: string }> = [
   { key: "seca", label: "Seca", desc: "Tensa, escamada, se siente tirante" },
@@ -85,6 +130,10 @@ const STEPS = [
   { id: 3, title: "Cuándo quieres la rutina", subtitle: "4 de 4" },
 ];
 
+/* ============================================================
+   Page
+   ============================================================ */
+
 export default function RutinaPage() {
   const [step, setStep] = useState(0);
   const [skinType, setSkinType] = useState<SkinType | null>(null);
@@ -95,10 +144,25 @@ export default function RutinaPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [result, setResult] = useState<{
     routine: Routine;
     products: Product[];
   } | null>(null);
+
+  const [usage, setUsageState] = useState<{ date: string; count: number }>({
+    date: "",
+    count: 0,
+  });
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setUsageState(getUsage());
+    setHydrated(true);
+  }, []);
+
+  const limitReached = hydrated && usage.count >= DAILY_LIMIT;
+  const remaining = hydrated ? Math.max(0, DAILY_LIMIT - usage.count) : DAILY_LIMIT;
 
   function toggleConcern(c: string) {
     setConcerns((prev) =>
@@ -116,8 +180,10 @@ export default function RutinaPage() {
 
   async function handleSubmit() {
     if (!skinType || !ageRange || !experience || !timeOfDay) return;
+    if (limitReached) return;
     setLoading(true);
     setError(null);
+    setErrorCode(null);
     try {
       const res = await fetch("/api/rutina/recomendar", {
         method: "POST",
@@ -132,23 +198,33 @@ export default function RutinaPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        setError(
-          data.error ?? "No se pudo generar la rutina. Intenta de nuevo."
-        );
+        setError(data.error ?? "No se pudo generar la rutina. Intenta de nuevo.");
+        setErrorCode(data.code ?? null);
+        // If the server says we're at the limit, sync the local counter
+        if (data.code === "RATE_LIMIT") {
+          setUsage(DAILY_LIMIT);
+          setUsageState(getUsage());
+        }
         return;
       }
+      // Bump local counter (server is source of truth, this is just UX)
+      const newCount = usage.count + 1;
+      setUsage(newCount);
+      setUsageState({ date: todayLocal(), count: newCount });
       // Fetch the actual products (we need their details for the display)
-      const productsRes = await fetch("/api/rutina/productos?slugs=" +
-        data.routine.morning.concat(data.routine.evening)
-          .map((s: RoutineStep) => s.product_slug)
-          .join(",")
+      const productsRes = await fetch(
+        "/api/rutina/productos?slugs=" +
+          data.routine.morning
+            .concat(data.routine.evening)
+            .map((s: RoutineStep) => s.product_slug)
+            .join(",")
       );
-      const productsData = productsRes.ok ? await productsRes.json() : { products: [] };
+      const productsData = productsRes.ok
+        ? await productsRes.json()
+        : { products: [] };
       setResult({ routine: data.routine, products: productsData.products ?? [] });
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Error de conexión. Intenta de nuevo."
-      );
+    } catch {
+      setError("Error de conexión. Intenta de nuevo 💜");
     } finally {
       setLoading(false);
     }
@@ -157,6 +233,7 @@ export default function RutinaPage() {
   function handleReset() {
     setResult(null);
     setError(null);
+    setErrorCode(null);
     setStep(0);
     setSkinType(null);
     setConcerns([]);
@@ -165,7 +242,7 @@ export default function RutinaPage() {
     setTimeOfDay(null);
   }
 
-  // ── Result view ──
+  /* ── Result view ── */
   if (result) {
     const productBySlug = new Map(result.products.map((p) => [p.slug, p]));
     return (
@@ -189,7 +266,6 @@ export default function RutinaPage() {
             {result.routine.summary}
           </p>
 
-          {/* Morning */}
           {result.routine.morning.length > 0 && (
             <RoutineSection
               title="Mañana"
@@ -199,7 +275,6 @@ export default function RutinaPage() {
             />
           )}
 
-          {/* Evening */}
           {result.routine.evening.length > 0 && (
             <RoutineSection
               title="Noche"
@@ -209,7 +284,6 @@ export default function RutinaPage() {
             />
           )}
 
-          {/* Tips */}
           {result.routine.tips.length > 0 && (
             <section className="mt-10">
               <h2 className="font-headline-sm text-headline-sm text-on-surface">
@@ -221,7 +295,10 @@ export default function RutinaPage() {
                     key={i}
                     className="flex gap-3 rounded-md bg-surface-container-low p-3 font-body-md text-body-md text-on-surface"
                   >
-                    <Check className="mt-1 h-4 w-4 flex-shrink-0 text-tertiary-container" aria-hidden="true" />
+                    <Check
+                      className="mt-1 h-4 w-4 flex-shrink-0 text-tertiary-container"
+                      aria-hidden="true"
+                    />
                     <span>{t}</span>
                   </li>
                 ))}
@@ -230,15 +307,25 @@ export default function RutinaPage() {
           )}
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              leadingIcon={<RefreshCw className="h-4 w-4" />}
-            >
-              Generar otra rutina
-            </Button>
+            {!limitReached ? (
+              <Button
+                variant="secondary"
+                onClick={handleReset}
+                leadingIcon={<RefreshCw className="h-4 w-4" />}
+              >
+                Generar otra rutina
+              </Button>
+            ) : (
+              <div className="flex-1 rounded-md border border-outline-variant/30 bg-surface-container-low p-3 font-body-sm text-body-sm text-on-surface-variant">
+                Ya alcanzaste tus {DAILY_LIMIT} rutinas de hoy. Vuelve mañana ✨
+              </div>
+            )}
             <Link href="/productos" className="flex-1">
-              <Button variant="primary" fullWidth trailingIcon={<ArrowRight className="h-4 w-4" />}>
+              <Button
+                variant="primary"
+                fullWidth
+                trailingIcon={<ArrowRight className="h-4 w-4" />}
+              >
                 Ver todo el catálogo
               </Button>
             </Link>
@@ -248,7 +335,49 @@ export default function RutinaPage() {
     );
   }
 
-  // ── Form view ──
+  /* ── Limit reached (full-page friendly state) ── */
+  if (limitReached) {
+    return (
+      <main className="min-h-screen bg-background pb-32 pt-20 md:pb-24">
+        <div className="mx-auto max-w-2xl px-margin-mobile md:px-margin-desktop">
+          <Link
+            href="/"
+            className="mb-4 inline-flex items-center gap-1 font-label-caps text-label-caps text-on-surface-variant transition-colors hover:text-primary"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Inicio
+          </Link>
+          <div className="rounded-2xl border border-primary/20 bg-primary-fixed/10 p-8 text-center md:p-12">
+            <div className="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <Clock className="h-8 w-8" aria-hidden="true" />
+            </div>
+            <h1 className="font-headline-md text-headline-md text-on-surface">
+              Ya alcanzaste tus {DAILY_LIMIT} rutinas de hoy
+            </h1>
+            <p className="mx-auto mt-3 max-w-md font-body-md text-body-md text-on-surface-variant">
+              Cada día puedes generar hasta {DAILY_LIMIT} rutinas nuevas con nuestra IA.
+              Vuelve mañana para seguir explorando combinaciones de productos para tu piel ✨
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Link href="/productos">
+                <Button
+                  variant="primary"
+                  trailingIcon={<ArrowRight className="h-4 w-4" />}
+                >
+                  Ver productos
+                </Button>
+              </Link>
+              <Link href="/soporte">
+                <Button variant="ghost">¿Dudas? Escríbenos</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  /* ── Form view ── */
   return (
     <main className="min-h-screen bg-background pb-32 pt-20 md:pb-24">
       <div className="mx-auto max-w-2xl px-margin-mobile md:px-margin-desktop">
@@ -274,12 +403,19 @@ export default function RutinaPage() {
           </div>
         </header>
 
-        <p className="mb-8 font-body-md text-body-md text-on-surface-variant">
+        <p className="mb-3 font-body-md text-body-md text-on-surface-variant">
           Responde 4 preguntas rápidas y nuestra IA te arma una rutina
           personalizada usando solo los productos de nuestra tienda.
         </p>
 
-        {/* Progress */}
+        {hydrated && (
+          <p className="mb-6 font-body-sm text-body-sm text-on-surface-variant">
+            Te quedan <strong className="text-primary">{remaining}</strong>{" "}
+            {remaining === 1 ? "rutina gratis" : "rutinas gratis"} hoy (se
+            reinician a las 00:00 UTC).
+          </p>
+        )}
+
         <div className="mb-8 flex items-center gap-2">
           {STEPS.map((s) => (
             <div
@@ -296,7 +432,10 @@ export default function RutinaPage() {
         <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-sm md:p-8">
           {loading ? (
             <div className="flex flex-col items-center gap-4 py-12 text-center">
-              <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden="true" />
+              <Loader2
+                className="h-10 w-10 animate-spin text-primary"
+                aria-hidden="true"
+              />
               <p className="font-headline-sm text-headline-sm text-on-surface">
                 Generando tu rutina…
               </p>
@@ -314,7 +453,6 @@ export default function RutinaPage() {
                 {STEPS[step]?.title}
               </h2>
 
-              {/* Step content */}
               <div className="mt-6">
                 {step === 0 && (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -405,18 +543,19 @@ export default function RutinaPage() {
                 )}
               </div>
 
-              {/* Error */}
               {error && (
                 <div
                   role="alert"
                   className="mt-6 flex items-start gap-2 rounded-md border border-error bg-error-container p-3 font-body-sm text-body-sm text-error"
                 >
-                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                  <AlertCircle
+                    className="mt-0.5 h-4 w-4 flex-shrink-0"
+                    aria-hidden="true"
+                  />
                   <span>{error}</span>
                 </div>
               )}
 
-              {/* Nav */}
               <div className="mt-8 flex items-center justify-between">
                 <Button
                   variant="ghost"
@@ -491,7 +630,9 @@ function OptionButton({
         <span
           className={cn(
             "mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full",
-            active ? "bg-primary text-on-primary" : "bg-primary-fixed/30 text-primary"
+            active
+              ? "bg-primary text-on-primary"
+              : "bg-primary-fixed/30 text-primary"
           )}
         >
           <Icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -513,7 +654,10 @@ function OptionButton({
         )}
       </div>
       {active && (
-        <Check className="ml-1 h-4 w-4 flex-shrink-0 text-primary" aria-hidden="true" />
+        <Check
+          className="ml-1 h-4 w-4 flex-shrink-0 text-primary"
+          aria-hidden="true"
+        />
       )}
     </button>
   );

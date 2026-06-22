@@ -122,7 +122,12 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      increment_routine_query: {
+        Args: { p_ip_hash: string; p_day: string };
+        Returns: number;
+      };
+    };
     Enums: Record<string, never>;
   };
 }

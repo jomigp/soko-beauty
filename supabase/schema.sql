@@ -120,3 +120,42 @@ alter table store_setting
 
 alter table store_setting
   alter column local_delivery_cost_usd set default 0;
+
+-- ============================================================
+-- Rate limit para /api/rutina/recomendar
+-- 3 generaciones de rutina por cliente (IP hasheada) por día.
+-- Sobrevive cold starts de Vercel serverless.
+-- ============================================================
+
+create table if not exists routine_query (
+  ip_hash text not null,
+  day date not null,
+  count int not null default 0,
+  last_at timestamptz not null default now(),
+  primary key (ip_hash, day)
+);
+
+alter table routine_query enable row level security;
+
+-- atomic increment + return new count
+create or replace function increment_routine_query(
+  p_ip_hash text,
+  p_day date
+) returns int
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  new_count int;
+begin
+  insert into routine_query (ip_hash, day, count, last_at)
+    values (p_ip_hash, p_day, 1, now())
+  on conflict (ip_hash, day) do update
+    set count = routine_query.count + 1,
+        last_at = now()
+  returning count into new_count;
+  return new_count;
+end; $$;
+
+grant execute on function increment_routine_query(text, date) to anon, authenticated;

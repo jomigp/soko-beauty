@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { getActiveProducts, getCategories } from "@/lib/supabase-queries";
 import { getProvider } from "@/lib/ai/providers";
 import type { Product } from "@/lib/database.types";
@@ -9,22 +10,99 @@ import { supabaseBrowser } from "@/lib/supabase";
  * POST /api/rutina/recomendar
  *
  * Body: {
- *   skin_type: "seca" | "grasa" | "mixta" | "sensible",
- *   concerns: string[]   // e.g. ["hidratacion", "acne"]
- *   age_range: "18-25" | "26-35" | "36-45" | "46+",
- *   time_of_day: "mañana" | "noche" | "ambos",
- *   experience: "principiante" | "intermedio" | "avanzado"
+ *   skin_type, concerns, age_range, time_of_day, experience
  * }
  *
- * Response: { ok: true, routine: {...}, provider: "gemini", model: "..." }
- *
- * The provider is read from the store_setting row (ai_provider, ai_model),
- * so the owner can switch from /admin/configuracion without redeploying.
- * API keys stay in env vars (never in the DB).
+ * Rate limit: 3 generations per client (hashed IP) per day.
+ * Friendly errors: the `error` field is always customer-safe copy;
+ * technical details are only returned in dev mode under `technical`.
  */
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
+
+/* ============================================================
+   Rate limit
+   ============================================================ */
+
+const DAILY_LIMIT = 3;
+const SALT = process.env.ROUTINE_SALT ?? "soko-beauty-2026-mvp-salt";
+
+function getClientIp(request: Request): string {
+  const xff = request.headers.get("x-forwarded-for");
+  if (xff) {
+    const first = xff.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp;
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (cfIp) return cfIp;
+  return "unknown";
+}
+
+function hashIp(ip: string): string {
+  return createHash("sha256")
+    .update(SALT + ":" + ip)
+    .digest("hex")
+    .slice(0, 32);
+}
+
+function todayUtc(): string {
+  // YYYY-MM-DD in UTC. Using UTC day boundary so the reset time
+  // is consistent across time zones (rate limit at 00:00 UTC).
+  return new Date().toISOString().slice(0, 10);
+}
+
+/* ============================================================
+   Friendly errors
+   ============================================================ */
+
+type ErrorCode =
+  | "NO_PRODUCTS"
+  | "NO_API_KEY"
+  | "RATE_LIMIT"
+  | "PROVIDER_ERROR"
+  | "PARSE_ERROR"
+  | "NO_MATCH"
+  | "BAD_REQUEST";
+
+const FRIENDLY: Record<ErrorCode, string> = {
+  NO_PRODUCTS:
+    "Estamos preparando rutinas personalizadas para ti. Vuelve pronto 💜",
+  NO_API_KEY:
+    "Nuestro generador de rutinas con IA está descansando un momento. Vuelve en unas horas 💜",
+  RATE_LIMIT:
+    "Ya alcanzaste tus 3 rutinas de hoy. Vuelve mañana para más recomendaciones ✨",
+  PROVIDER_ERROR:
+    "Tuvimos un problema generando tu rutina. Intenta de nuevo en unos minutos 💜",
+  PARSE_ERROR:
+    "Tuvimos un problema procesando tu rutina. Intenta de nuevo 💜",
+  NO_MATCH:
+    "No encontramos productos en nuestro catálogo que coincidan con tu perfil. Prueba cambiar el tipo de piel o las preocupaciones 💜",
+  BAD_REQUEST:
+    "Por favor completa todas las preguntas para poder crear tu rutina 💜",
+};
+
+function errorResponse(
+  code: ErrorCode,
+  technical: string,
+  status: number
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      code,
+      error: FRIENDLY[code],
+      ...(process.env.NODE_ENV === "development" ? { technical } : {}),
+    },
+    { status }
+  );
+}
+
+/* ============================================================
+   Routine builder
+   ============================================================ */
 
 interface RoutineRequest {
   skin_type?: string;
@@ -136,10 +214,13 @@ function sanitizeRoutine(raw: unknown, catalog: Product[]): Routine {
   };
 }
 
+/* ============================================================
+   Handlers
+   ============================================================ */
+
 async function loadStoreConfig() {
   const supabase = supabaseBrowser();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("store_setting")
     .select("ai_provider, ai_model")
     .eq("id", 1)
@@ -147,14 +228,50 @@ async function loadStoreConfig() {
   return data as { ai_provider?: string; ai_model?: string } | null;
 }
 
+async function incrementAndCheckLimit(ipHash: string): Promise<number> {
+  const supabase = supabaseBrowser();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc("increment_routine_query", {
+    p_ip_hash: ipHash,
+    p_day: todayUtc(),
+  });
+  if (error) {
+    console.error("[rate-limit] rpc error:", error);
+    return 0; // fail open — better UX than blocking
+  }
+  return typeof data === "number" ? data : 0;
+}
+
 export async function POST(request: Request) {
   let body: RoutineRequest;
   try {
     body = (await request.json()) as RoutineRequest;
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "Cuerpo inválido" },
-      { status: 400 }
+    return errorResponse(
+      "BAD_REQUEST",
+      "Invalid JSON body",
+      400
+    );
+  }
+
+  // Basic validation
+  if (!body.skin_type || !body.age_range || !body.experience || !body.time_of_day) {
+    return errorResponse(
+      "BAD_REQUEST",
+      "Missing required fields: skin_type, age_range, experience, time_of_day",
+      400
+    );
+  }
+
+  // Rate limit check (atomic via RPC)
+  const ip = getClientIp(request);
+  const ipHash = hashIp(ip);
+  const count = await incrementAndCheckLimit(ipHash);
+  if (count > DAILY_LIMIT) {
+    return errorResponse(
+      "RATE_LIMIT",
+      `IP ${ipHash} exceeded ${DAILY_LIMIT}/day (count=${count})`,
+      429
     );
   }
 
@@ -166,14 +283,10 @@ export async function POST(request: Request) {
   ]);
 
   if (products.length === 0) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "No hay productos en el catálogo todavía. Añade productos desde /admin/productos antes de generar rutinas.",
-        code: "NO_PRODUCTS",
-      },
-      { status: 503 }
+    return errorResponse(
+      "NO_PRODUCTS",
+      "store_setting has 0 active products",
+      503
     );
   }
 
@@ -183,18 +296,10 @@ export async function POST(request: Request) {
   const provider = getProvider(providerKey);
 
   if (!provider.isConfigured()) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "El generador de rutinas con IA no está configurado. Tu tienda está usando " +
-          provider.name +
-          " pero falta la API key. Pídele a tu equipo técnico que añada la variable " +
-          envKeyFor(providerKey) +
-          " en Vercel.",
-        code: "NO_API_KEY",
-      },
-      { status: 503 }
+    return errorResponse(
+      "NO_API_KEY",
+      `Provider ${providerKey} is selected but its API key env var is not set`,
+      503
     );
   }
 
@@ -215,15 +320,10 @@ export async function POST(request: Request) {
       maxOutputTokens: 2048,
     });
   } catch (err) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: `La IA (${provider.name}) respondió con error: ${
-          err instanceof Error ? err.message : "desconocido"
-        }`,
-        code: "PROVIDER_ERROR",
-      },
-      { status: 502 }
+    return errorResponse(
+      "PROVIDER_ERROR",
+      err instanceof Error ? err.message : "unknown",
+      502
     );
   }
 
@@ -232,27 +332,20 @@ export async function POST(request: Request) {
   try {
     parsed = JSON.parse(rawText);
   } catch {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "La IA devolvió una respuesta no-JSON. Intenta de nuevo.",
-        code: "PARSE_ERROR",
-      },
-      { status: 502 }
+    return errorResponse(
+      "PARSE_ERROR",
+      `Model returned non-JSON: ${rawText.slice(0, 200)}`,
+      502
     );
   }
 
   const routine = sanitizeRoutine(parsed, products);
 
   if (routine.morning.length === 0 && routine.evening.length === 0) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "La IA no encontró productos en el catálogo que coincidan con tu perfil. Prueba cambiar el tipo de piel o las preocupaciones.",
-        code: "NO_MATCH",
-      },
-      { status: 404 }
+    return errorResponse(
+      "NO_MATCH",
+      "All AI-suggested slugs were filtered out",
+      404
     );
   }
 
@@ -261,13 +354,11 @@ export async function POST(request: Request) {
     routine,
     provider: provider.name,
     model,
+    /* include remaining quota so the client can show it */
+    quota: {
+      used: count,
+      limit: DAILY_LIMIT,
+      remaining: Math.max(0, DAILY_LIMIT - count),
+    },
   });
-}
-
-function envKeyFor(provider: AIProviderKey): string {
-  return {
-    gemini: "GEMINI_API_KEY",
-    deepseek: "DEEPSEEK_API_KEY",
-    openai: "OPENAI_API_KEY",
-  }[provider];
 }
