@@ -72,7 +72,7 @@ export default async function RootLayout({
             Pages should NOT add their own pb-40 pt-20 — that would double
             the inset. Add pt/pb only for non-fixed, content-internal spacing.
           */}
-          <div className="min-h-screen pt-20 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pt-28 md:pb-24">
+          <div className="flex min-h-screen flex-col pt-20 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pt-28 md:pb-24">
             {children}
           </div>
           <CartDrawer tasaBcv={tasaBcv} />

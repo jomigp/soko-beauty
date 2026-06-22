@@ -30,7 +30,7 @@ export default async function HomePage() {
   const heroProduct = featured[0] ?? allProducts[0];
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="bg-background">
       {/* HERO */}
       <section className="relative px-margin-mobile md:px-margin-desktop">
         <div className="mx-auto grid max-w-site gap-lg md:grid-cols-2 md:items-center">

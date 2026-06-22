@@ -246,7 +246,7 @@ export default function RutinaPage() {
   if (result) {
     const productBySlug = new Map(result.products.map((p) => [p.slug, p]));
     return (
-      <main className="min-h-screen bg-background">
+      <main className="bg-background">
         <div className="mx-auto max-w-3xl px-margin-mobile md:px-margin-desktop">
           <div className="mb-6 flex items-center gap-3">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary-fixed/30 text-primary">
@@ -338,7 +338,7 @@ export default function RutinaPage() {
   /* ── Limit reached (full-page friendly state) ── */
   if (limitReached) {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="bg-background">
         <div className="mx-auto max-w-2xl px-margin-mobile md:px-margin-desktop">
           <Link
             href="/"
@@ -379,7 +379,7 @@ export default function RutinaPage() {
 
   /* ── Form view ── */
   return (
-    <main className="min-h-screen bg-background">
+    <main className="bg-background">
       <div className="mx-auto max-w-2xl px-margin-mobile md:px-margin-desktop">
         <Link
           href="/"

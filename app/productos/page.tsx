@@ -70,7 +70,7 @@ export default function CatalogPage() {
   }, [products, query, selectedPaso, selectedNecesidad]);
 
   return (
-    <main className="min-h-screen bg-background px-margin-mobile md:px-margin-desktop">
+    <main className="bg-background px-margin-mobile md:px-margin-desktop">
       <div className="mx-auto max-w-site">
         <header>
           <h1 className="font-headline-md text-headline-sm md:text-headline-md text-on-surface">

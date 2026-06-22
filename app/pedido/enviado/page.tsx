@@ -20,7 +20,7 @@ function EnviadoInner() {
   }, [url, autoOpened]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-margin-mobile">
+    <main className="flex flex-1 items-center justify-center bg-background px-margin-mobile">
       <div className="max-w-md text-center">
         <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-tertiary-fixed/40 text-tertiary-container">
           <Check className="h-12 w-12" aria-hidden="true" />
@@ -67,7 +67,7 @@ export default function EnviadoPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-background">
+        <main className="flex flex-1 items-center justify-center bg-background">
           <p className="font-body-md text-body-md text-on-surface-variant">
             Cargando…
           </p>

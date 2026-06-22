@@ -103,7 +103,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-margin-mobile">
+      <main className="flex items-center justify-center bg-background px-margin-mobile">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary-fixed/30 text-primary">
             <ShoppingBag className="h-10 w-10" aria-hidden="true" />
@@ -159,14 +159,14 @@ export default function CartPage() {
 
   if (!store || !rates) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background">
+      <main className="flex items-center justify-center bg-background">
         <p className="font-body-md text-body-md text-on-surface-variant">Cargando…</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="bg-background">
       <div className="mx-auto max-w-3xl px-margin-mobile md:px-margin-desktop">
         <Link
           href="/productos"

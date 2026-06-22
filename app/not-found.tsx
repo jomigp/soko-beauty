@@ -3,7 +3,7 @@ import { Button } from "@/components/Button";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-margin-mobile">
+    <main className="flex flex-1 items-center justify-center bg-background px-margin-mobile">
       <div className="max-w-md text-center">
         <p className="font-display-lg text-display-lg-mobile text-primary">
           404

@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background">
+    <main className="flex flex-1 items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-3">
         <div
           aria-hidden="true"
