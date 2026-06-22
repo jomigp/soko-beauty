@@ -66,7 +66,15 @@ export default async function RootLayout({
       <body className="min-h-screen bg-background text-on-background antialiased">
         <CartProvider>
           <TopBar />
-          {children}
+          {/*
+            Single source of truth for the spacing required by the fixed
+            TopBar (h-20 = 80px) and BottomNav (~60–95px + iOS safe area).
+            Pages should NOT add their own pb-40 pt-20 — that would double
+            the inset. Add pt/pb only for non-fixed, content-internal spacing.
+          */}
+          <div className="min-h-screen pt-20 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pt-28 md:pb-24">
+            {children}
+          </div>
           <CartDrawer tasaBcv={tasaBcv} />
           <BottomNav />
           <WhatsAppButton phone={whatsapp} variant="floating" />

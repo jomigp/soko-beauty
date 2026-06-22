@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { Menu, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { useCart } from "./CartContext";
 
@@ -22,6 +23,14 @@ const NAV_LINKS = [
 export function TopBar() {
   const { open, totalQty } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  // Hide on admin routes — the admin layout has its own header.
+  // The mounted gate prevents a hydration mismatch (usePathname
+  // returns null on the server, which would otherwise cause the
+  // server-rendered bar to differ from the client first paint).
+  if (mounted && pathname?.startsWith("/admin")) return null;
 
   return (
     <header className="fixed left-0 right-0 top-0 z-nav-sticky h-20 border-b border-outline-variant/20 glass-panel">

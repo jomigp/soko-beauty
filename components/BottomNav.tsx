@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Home, ShoppingBag, Sparkles, HelpCircle, ShoppingCart } from "lucide-react";
 import { cn } from "./Button";
@@ -29,6 +30,11 @@ export function BottomNav() {
   const pathname = usePathname();
   const { items } = useCart();
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  // Hide on admin routes — admin has its own header and doesn't need
+  // the customer bottom nav.
+  if (mounted && pathname?.startsWith("/admin")) return null;
 
   return (
     <nav

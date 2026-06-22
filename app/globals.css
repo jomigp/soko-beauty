@@ -30,8 +30,8 @@
     --soko-glow-end: #ff8a8a;
 
     /* Glassmorphism tokens */
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --glass-blur: 12px;
+    --glass-bg: rgba(253, 249, 246, 0.92);
+    --glass-blur: 16px;
   }
 
   html {

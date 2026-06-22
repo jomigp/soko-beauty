@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PrivacidadPage() {
   return (
-    <main className="min-h-screen bg-background px-margin-mobile pb-40 pt-20 md:px-margin-desktop md:pb-24">
+    <main className="min-h-screen bg-background px-margin-mobile md:px-margin-desktop">
       <article className="prose-body mx-auto max-w-3xl">
         <Link
           href="/"
