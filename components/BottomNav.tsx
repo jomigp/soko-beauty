@@ -16,7 +16,7 @@ interface NavItem {
 const ITEMS: NavItem[] = [
   { href: "/", label: "Inicio", icon: Home },
   { href: "/productos", label: "Tienda", icon: ShoppingBag },
-  { href: "/rutina", label: "Rutina", icon: Sparkles, disabled: true },
+  { href: "/rutina", label: "Rutina", icon: Sparkles },
   { href: "/carrito", label: "Carrito", icon: ShoppingCart },
   { href: "/soporte", label: "Soporte", icon: HelpCircle },
 ];
