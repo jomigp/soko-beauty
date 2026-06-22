@@ -169,6 +169,7 @@ Para verificar que la BD responde, después de Sprint 2 (cuando el catálogo lea
 
 - [ ] Cambiar `NEXT_PUBLIC_SITE_URL` al dominio real.
 - [ ] Generar una `ADMIN_PASSWORD` fuerte (o migrar a Supabase Auth).
+- [ ] (Opcional) Configurar `GEMINI_API_KEY` para activar la página de rutinas con IA (gratis, ver https://aistudio.google.com/app/apikey).
 - [ ] Confirmar la región del proyecto Supabase (ya viene `sa-east-1` si elegiste São Paulo).
 - [ ] Revisar las políticas de RLS: solo lectura pública está OK, pero si activas escritura pública sin querer, **cualquier visitante puede modificar productos**.
 - [ ] Activar **Daily backups** en Supabase Dashboard → Settings → Database (en plan Free solo hay backups manuales; en Pro son automáticos).

@@ -225,4 +225,40 @@ Todo eso es **Fase 2**, después del lanzamiento.
 
 ---
 
+## 🪄 BONUS — Cómo funciona la página de Rutinas con IA
+
+Tu tienda tiene un botón **"Rutina"** en el menú inferior que abre un generador de rutinas personalizado. Los clientes responden 4 preguntas (tipo de piel, preocupaciones, edad, momento) y la IA les arma una rutina de skincare usando **solo los productos que tú vendes**.
+
+**Lo que la IA ve:**
+- Las respuestas del cliente
+- Tu catálogo completo de productos (nombre, marca, precio, paso de rutina, necesidades)
+
+**Lo que la IA devuelve:**
+- Rutina de mañana + noche
+- Cada paso con el producto recomendado y por qué le sirve
+- Tips prácticos personalizados
+- **Solo productos de tu tienda** — si la IA sugiere algo que no vendes, el sistema lo filtra
+
+**Cómo activarlo (5 min, gratis):**
+
+1. Ve a https://aistudio.google.com/app/apikey
+2. Click **"Create API Key"** (necesitas una cuenta de Google)
+3. Copia la key
+4. En Vercel → tu proyecto → **Settings** → **Environment Variables**
+5. **Add New**:
+   - **Key:** `GEMINI_API_KEY`
+   - **Value:** la key que copiaste
+6. Marca las 3 environments (Production, Preview, Development)
+7. **Save** → Vercel hace redeploy automático
+
+**Si no la activas**, la página muestra un mensaje pidiendo al equipo técnico que la configure. No rompe nada.
+
+**Detalles técnicos:**
+- Usa **Gemini 2.0 Flash** (gratis, 15 RPM, 1500 RPD)
+- La API key NUNCA se envía al navegador
+- El catálogo se valida server-side: el cliente solo ve productos reales
+- Si Gemini se cae, la página muestra un error amigable y permite reintentar
+
+---
+
 *Manual v1 — Soko Beauty · Junio 2026 · Para dudas técnicas, contacta al equipo que te construyó la tienda.*
